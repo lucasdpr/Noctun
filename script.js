@@ -82,10 +82,19 @@ function atualizarUI() {
 
 // 4. Controle de Modais e Interações Visuais
 
+// 4. Controle de Modais e Interações Visuais
+
 function toggleCart() {
     // Alterna a classe 'open' no sidebar e 'active' no overlay escuro
     cartSidebar.classList.toggle('open');
     cartOverlay.classList.toggle('active');
+
+    // MOBILE FIX: Trava a rolagem da página de fundo quando o carrinho estiver aberto
+    if (cartSidebar.classList.contains('open')) {
+        document.body.style.overflow = 'hidden';
+    } else {
+        document.body.style.overflow = 'auto';
+    }
 }
 
 function mostrarToast(mensagem) {
