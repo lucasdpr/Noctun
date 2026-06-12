@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Noctun Tarot | Consultas e Trabalhos</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+</head>
+<body>
+
+    <header id="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <span class="material-symbols-outlined">auto_awesome</span>
+                Noctun Tarot
+            </div>
+            <nav class="nav-links">
+                <a href="#inicio">Início</a>
+                <a href="#servicos">Serviços</a>
+                <a href="#metodos">Tiragens</a>
+                <a href="#sobre">Quem Sou</a>
+            </nav>
+            <button class="cart-btn" onclick="toggleCart()">
+                <span class="material-symbols-outlined">shopping_bag</span>
+                <span id="cart-badge" class="badge">0</span>
+            </button>
+        </div>
+    </header>
+
+    <aside id="cart-sidebar" class="cart-sidebar">
+        <div class="cart-header">
+            <h2>Seu Pedido</h2>
+            <button class="close-cart" onclick="toggleCart()">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <div class="cart-items" id="cart-items">
+            <p class="empty-cart">Seu carrinho está vazio.</p>
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Total:</span>
+                <span id="cart-total-value">R$ 0,00</span>
+            </div>
+            <button class="checkout-btn" onclick="finalizarCompra()">Finalizar no WhatsApp</button>
+        </div>
+    </aside>
+    <div id="cart-overlay" class="overlay" onclick="toggleCart()"></div>
+
+    <main>
+        <section id="inicio" class="hero">
+            <div class="hero-content">
+                <h1>Conecte-se com a sabedoria do invisível</h1>
+                <p>Leituras de Tarot, direcionamento espiritual e feitiços de adoçamento com responsabilidade e clareza.</p>
+                <a href="#servicos" class="btn-primary">Conhecer Serviços</a>
+            </div>
+        </section>
+
+        <section id="servicos" class="section-container">
+            <div class="section-header">
+                <h2>Leituras & Consultas</h2>
+                <p>Clareza rápida e objetiva para suas questões.</p>
+            </div>
+            
+            <div class="grid" id="grid-consultas">
+                <div class="product-card">
+                    <div class="card-icon"><span class="material-symbols-outlined">help</span></div>
+                    <h3>Pergunta Objetiva</h3>
+                    <p>Ideal para dúvidas pontuais de sim ou não, ou direções rápidas.</p>
+                    <div class="price">R$ 15,00</div>
+                    <button class="btn-add" onclick="adicionarAoCarrinho('Pergunta Objetiva', 15)">Adicionar</button>
+                </div>
+                <div class="product-card">
+                    <div class="card-icon"><span class="material-symbols-outlined">search_insights</span></div>
+                    <h3>Pergunta Aprofundada</h3>
+                    <p>Análise detalhada de uma situação específica com conselhos.</p>
+                    <div class="price">R$ 25,00</div>
+                    <button class="btn-add" onclick="adicionarAoCarrinho('Pergunta Aprofundada', 25)">Adicionar</button>
+                </div>
+                <div class="product-card">
+                    <div class="card-icon"><span class="material-symbols-outlined">schedule</span></div>
+                    <h3>Consulta 30 Minutos</h3>
+                    <p>Tempo livre para abordar diversos temas que você precisar.</p>
+                    <div class="price">R$ 50,00</div>
+                    <button class="btn-add" onclick="adicionarAoCarrinho('Consulta 30 Min', 50)">Adicionar</button>
+                </div>
+                <div class="product-card">
+                    <div class="card-icon"><span class="material-symbols-outlined">hourglass_empty</span></div>
+                    <h3>Consulta 1 Hora</h3>
+                    <p>Sessão completa para um mergulho profundo no seu momento atual.</p>
+                    <div class="price">R$ 100,00</div>
+                    <button class="btn-add" onclick="adicionarAoCarrinho('Consulta 1 Hora', 100)">Adicionar</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="metodos" class="section-container bg-darker">
+            <div class="section-header">
+                <h2>Tiragens Especiais & Trabalhos</h2>
+                <p>Métodos profundos para relações e energia pessoal.</p>
+            </div>
+
+            <div class="grid grid-large">
+                <div class="product-card premium-card">
+                    <div class="card-badge">Amor & Relações</div>
+                    <h3>Templo de Afrodite</h3>
+                    <p>Compreenda sentimentos, desejos, bloqueios emocionais e dinâmicas do seu relacionamento. Uma leitura focada na sua vida afetiva.</p>
+                    <div class="price">R$ 40,00</div>
+                    <button class="btn-add" onclick="adicionarAoCarrinho('Templo de Afrodite', 40)">Adicionar</button>
+                </div>
+
+                <div class="product-card shadow-card">
+                    <div class="card-badge dark-badge">Sombras & Oculto</div>
+                    <h3>Templo do Diabo</h3>
+                    <p>Investiga apego, manipulação, mentiras e padrões tóxicos. Descubra a sombra por trás das aparências com extrema objetividade.</p>
+                    <div class="price">R$ 40,00</div>
+                    <button class="btn-add" onclick="adicionarAoCarrinho('Templo do Diabo', 40)">Adicionar</button>
+                </div>
+
+                <div class="product-card gold-card">
+                    <div class="card-badge gold-badge">Trabalho Espiritual</div>
+                    <h3>Feitiço de Auto-adoçamento</h3>
+                    <p>Fortaleça seu amor-próprio, autoestima e magnetismo. Adoce sua própria energia para atrair situações harmoniosas para a sua vida.</p>
+                    <div class="price">R$ 70,00</div>
+                    <button class="btn-add" onclick="adicionarAoCarrinho('Trabalho: Auto-adoçamento', 70)">Adicionar</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="sobre" class="section-container">
+            <div class="about-grid">
+                <div class="about-text">
+                    <h2>Sobre Guilherme</h2>
+                    <p>Tenho 21 anos e atuo com o Tarot dedicando-me ao estudo contínuo, à prática responsável e ao aprimoramento constante da interpretação das cartas.</p>
+                    <p>Meu trabalho une sensibilidade, intuição e análise simbólica. Acredito no Tarot como uma poderosa ferramenta de reflexão e orientação, sempre respeitando o livre-arbítrio, o momento e a individualidade de cada consulente.</p>
+                    <ul class="regras-list">
+                        <li><span class="material-symbols-outlined">verified</span> Prazos de entrega: até 3 dias corridos.</li>
+                        <li><span class="material-symbols-outlined">electric_bolt</span> Taxa de Urgência (Furar Fila): + R$ 50,00</li>
+                        <li><span class="material-symbols-outlined">block</span> Não realizamos estornos após o agendamento.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="logo">Noctun Tarot</div>
+            <p>Conecte-se nas redes sociais</p>
+            <div class="social-links">
+                <a href="#">Instagram: @Noctun_Tarot</a>
+                <a href="#">TikTok: @Noctun_Tarot</a>
+            </div>
+            <p class="copyright">&copy; 2026 Noctun Tarot. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <div id="toast-container"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
