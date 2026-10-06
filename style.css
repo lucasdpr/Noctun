@@ -1584,90 +1584,6 @@ p {
     margin-top: 1.9rem;
 }
 
-/* ---------- Trabalho espiritual ---------- */
-.ritual {
-    display: grid;
-    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-    align-items: center;
-    gap: clamp(2.5rem, 7vw, 5.5rem);
-}
-
-.ritual-photo {
-    position: relative;
-    width: 100%;
-    max-width: 430px;
-    justify-self: center;
-}
-
-.ritual-photo::before {
-    content: '';
-    position: absolute;
-    inset: -14px;
-    border: 1px solid var(--line-strong);
-    border-radius: 999px 999px 34px 34px;
-    pointer-events: none;
-}
-
-.ritual-photo::after {
-    content: '';
-    position: absolute;
-    right: -26px;
-    bottom: 12%;
-    width: 52px;
-    height: 52px;
-    background: var(--gold);
-    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 1L13.56 10.44L23 12L13.56 13.56L12 23L10.44 13.56L1 12L10.44 10.44Z'/%3E%3C/svg%3E") center / contain no-repeat;
-    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 1L13.56 10.44L23 12L13.56 13.56L12 23L10.44 13.56L1 12L10.44 10.44Z'/%3E%3C/svg%3E") center / contain no-repeat;
-}
-
-.ritual-photo img {
-    width: 100%;
-    height: auto;
-    aspect-ratio: 3 / 4;
-    object-fit: cover;
-    border-radius: 999px 999px 22px 22px;
-    box-shadow: var(--shadow-lift);
-    background: var(--cream-deep);
-}
-
-.ritual-copy h3 {
-    margin: 1rem 0 1rem;
-    font-family: var(--font-display);
-    font-weight: 500;
-    font-size: clamp(2.3rem, 1.6rem + 2.6vw, 3.4rem);
-    line-height: 1.02;
-}
-
-.ritual-copy > p + p {
-    margin-top: 0.9rem;
-}
-
-.ritual-copy > p:not(.tag) {
-    max-width: 35rem;
-}
-
-.benefits {
-    display: grid;
-    gap: 0.6rem;
-    margin-top: 1.5rem;
-}
-
-.benefits li {
-    display: flex;
-    align-items: center;
-    gap: 0.7rem;
-    color: var(--ink);
-    font-weight: 500;
-    font-size: 0.98rem;
-}
-
-.benefits svg {
-    width: 15px;
-    height: 15px;
-    flex-shrink: 0;
-    color: var(--gold);
-}
-
 /* ---------- Velas & banhos ---------- */
 .shop-group + .shop-group {
     margin-top: clamp(3.5rem, 8vw, 5.5rem);
@@ -2736,7 +2652,6 @@ p {
 .js .hero-art[data-reveal] { transition-delay: 0.2s; }
 .js .menu-group[data-reveal]:nth-child(2),
 .js .spread-copy[data-reveal],
-.js .ritual-copy[data-reveal],
 .js .about-text[data-reveal] { transition-delay: 0.12s; }
 .js .step[data-reveal]:nth-child(2) { transition-delay: 0.08s; }
 .js .step[data-reveal]:nth-child(3) { transition-delay: 0.16s; }
@@ -2975,7 +2890,6 @@ p {
 
     .menu-grid,
     .spread,
-    .ritual,
     .about {
         grid-template-columns: 1fr;
     }
@@ -2991,14 +2905,7 @@ p {
     }
 
     .spread-copy,
-    .ritual-copy {
-        max-width: 620px;
-        justify-self: center;
-    }
 
-    .ritual-photo {
-        max-width: 360px;
-    }
 
     .about-quote {
         max-width: 620px;
@@ -3205,16 +3112,7 @@ p {
         grid-template-columns: 1fr;
     }
 
-    .ritual-photo {
-        width: calc(100% - 28px);
-        max-width: 300px;
-    }
 
-    .ritual-photo::after {
-        right: -18px;
-        width: 40px;
-        height: 40px;
-    }
 
     .step {
         display: grid;
