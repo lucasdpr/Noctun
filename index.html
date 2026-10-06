@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Noctun Tarot | Leituras de Tarot e Trabalhos Espirituais</title>
-    <meta name="description" content="Leituras de Tarot com Guilherme: perguntas avulsas, consultas, métodos Templo de Afrodite e Templo do Diabo e trabalho espiritual de auto-adoçamento. Pedido direto pelo WhatsApp.">
+    <meta name="description" content="Leituras de Tarot com Guilherme: perguntas avulsas, consultas, métodos Templo de Afrodite e Templo do Diabo, trabalho espiritual de auto-adoçamento, velas aromáticas e banhos de ervas. Pedido direto pelo WhatsApp.">
     <meta name="theme-color" content="#f3f0e9">
 
     <meta property="og:type" content="website">
@@ -155,6 +155,7 @@
                 <a href="#leituras">Leituras</a>
                 <a href="#metodos">Métodos</a>
                 <a href="#trabalho">Trabalho espiritual</a>
+                <a href="#velas">Velas &amp; banhos</a>
                 <a href="#sobre">Quem sou</a>
                 <a href="#como-funciona">Como funciona</a>
             </nav>
@@ -552,8 +553,187 @@
             </div>
         </section>
 
+        <!-- ============ VELAS & BANHOS ============ -->
+        <section class="section section--tint" id="velas" aria-labelledby="velas-title">
+            <svg class="corner corner--tr corner--soft" aria-hidden="true"><use href="#corner"/></svg>
+
+            <div class="container">
+                <header class="section-head" data-reveal>
+                    <h2 class="display" id="velas-title">Velas</h2>
+                    <span class="rule" aria-hidden="true"></span>
+                    <p class="kicker">&amp; banhos de ervas</p>
+                    <p class="section-intro">Velas aromáticas na essência e na cor que você escolher, e banhos de ervas. O pedido é feito pelo WhatsApp, e a forma de entrega é combinada por lá.</p>
+                </header>
+
+                <!--
+                    Opções das velas (fonte única): ao ganhar uma cor ou essência nova,
+                    edite só esta lista. A cor também precisa de uma classe .swatch--nome no CSS.
+                -->
+                <template id="tpl-vela-opcoes">
+                    <div class="opts" data-opts>
+                        <label class="opt-field">
+                            <span class="opt-label">Essência</span>
+                            <span class="select-wrap">
+                                <select data-opt="essencia">
+                                    <option value="">Escolha a essência</option>
+                                    <option>Lavanda</option>
+                                    <option>Camomila</option>
+                                    <option>Alecrim</option>
+                                    <option>Alfazema</option>
+                                    <option>Jasmim</option>
+                                    <option>Calêndula</option>
+                                </select>
+                            </span>
+                        </label>
+                        <fieldset class="opt-field">
+                            <legend class="opt-label">Cor <span class="opt-chosen" data-opt-chosen></span></legend>
+                            <div class="swatches">
+                                <label class="swatch swatch--branca" title="Branca"><input type="radio" data-opt="cor" value="Branca"><span class="sr-only">Branca</span></label>
+                                <label class="swatch swatch--vermelha" title="Vermelha"><input type="radio" data-opt="cor" value="Vermelha"><span class="sr-only">Vermelha</span></label>
+                                <label class="swatch swatch--rosa" title="Rosa"><input type="radio" data-opt="cor" value="Rosa"><span class="sr-only">Rosa</span></label>
+                                <label class="swatch swatch--roxa" title="Roxa"><input type="radio" data-opt="cor" value="Roxa"><span class="sr-only">Roxa</span></label>
+                                <label class="swatch swatch--lilas" title="Lilás"><input type="radio" data-opt="cor" value="Lilás"><span class="sr-only">Lilás</span></label>
+                                <label class="swatch swatch--preta" title="Preta"><input type="radio" data-opt="cor" value="Preta"><span class="sr-only">Preta</span></label>
+                            </div>
+                        </fieldset>
+                        <p class="opt-error" data-opt-error role="alert" hidden></p>
+                    </div>
+                </template>
+
+                <div class="shop-group">
+                    <header class="shop-head" data-reveal>
+                        <h3>Velas aromáticas</h3>
+                        <p>Essências: lavanda, camomila, alecrim, alfazema, jasmim e calêndula. Cores: branca, vermelha, rosa, roxa, lilás e preta, com mais cores em breve.</p>
+                        <p class="shop-note">
+                            <svg aria-hidden="true"><use href="#twinkle"/></svg>
+                            O valor pode subir conforme a cor e a essência. O preço final é confirmado no WhatsApp.
+                        </p>
+                    </header>
+
+                    <div class="shop-rail" data-rail>
+                        <article class="product" data-product data-reveal>
+                            <div class="product-media">
+                                <img src="assets/vela-no-copo-800.webp" srcset="assets/vela-no-copo-480.webp 480w, assets/vela-no-copo-800.webp 800w"
+                                     sizes="(max-width: 600px) 76vw, (max-width: 920px) 44vw, 340px" width="800" height="1067" loading="lazy" decoding="async"
+                                     alt="Vela no Copo: vela de cera clara dentro de um copo de vidro transparente">
+                            </div>
+                            <div class="product-body">
+                                <h4 class="product-name">Vela no Copo</h4>
+                                <p class="product-price"><span class="from">a partir de</span> <span class="price-tag"><small>R$</small>35</span></p>
+                                <div data-opts-slot="tpl-vela-opcoes"></div>
+                                <button class="btn btn-gold btn-block" type="button" data-add data-id="vela-no-copo" data-name="Vela no Copo" data-price="35" data-price-from data-kind="produto" data-options="essencia cor">
+                                    <svg aria-hidden="true"><use href="#i-plus"/></svg><span>Adicionar ao pedido</span>
+                                </button>
+                            </div>
+                        </article>
+
+                        <article class="product" data-product data-reveal>
+                            <div class="product-media">
+                                <img src="assets/vela-palito-800.webp" srcset="assets/vela-palito-480.webp 480w, assets/vela-palito-800.webp 800w"
+                                     sizes="(max-width: 600px) 76vw, (max-width: 920px) 44vw, 340px" width="800" height="1067" loading="lazy" decoding="async"
+                                     alt="Vela Palito: vela alta e canelada, de cera clara, sobre um pires com borda dourada">
+                            </div>
+                            <div class="product-body">
+                                <h4 class="product-name">Vela Palito</h4>
+                                <p class="product-price"><span class="from">a partir de</span> <span class="price-tag"><small>R$</small>15</span></p>
+                                <div data-opts-slot="tpl-vela-opcoes"></div>
+                                <button class="btn btn-gold btn-block" type="button" data-add data-id="vela-palito" data-name="Vela Palito" data-price="15" data-price-from data-kind="produto" data-options="essencia cor">
+                                    <svg aria-hidden="true"><use href="#i-plus"/></svg><span>Adicionar ao pedido</span>
+                                </button>
+                            </div>
+                        </article>
+
+                        <article class="product" data-product data-reveal>
+                            <div class="product-media">
+                                <img src="assets/vela-peonia-800.webp" srcset="assets/vela-peonia-480.webp 480w, assets/vela-peonia-800.webp 800w"
+                                     sizes="(max-width: 600px) 76vw, (max-width: 920px) 44vw, 340px" width="800" height="1067" loading="lazy" decoding="async"
+                                     alt="Vela Peônia: vela em formato de flor de peônia, com várias pétalas, sobre um pires com borda dourada">
+                            </div>
+                            <div class="product-body">
+                                <h4 class="product-name">Vela Peônia</h4>
+                                <p class="product-price"><span class="from">a partir de</span> <span class="price-tag"><small>R$</small>25</span></p>
+                                <div data-opts-slot="tpl-vela-opcoes"></div>
+                                <button class="btn btn-gold btn-block" type="button" data-add data-id="vela-peonia" data-name="Vela Peônia" data-price="25" data-price-from data-kind="produto" data-options="essencia cor">
+                                    <svg aria-hidden="true"><use href="#i-plus"/></svg><span>Adicionar ao pedido</span>
+                                </button>
+                            </div>
+                        </article>
+                    </div>
+                    <div class="rail-dots" data-rail-dots aria-hidden="true"></div>
+                </div>
+
+                <div class="shop-group">
+                    <header class="shop-head" data-reveal>
+                        <h3>Banhos de ervas</h3>
+                        <p>Três banhos, R$ 12 cada.</p>
+                    </header>
+
+                    <!-- NOMES PROVISÓRIOS: confirmar os nomes dos banhos 2 e 3 (e se o 1 é mesmo o de Atração e Autoestima) -->
+                    <div class="shop-rail" data-rail>
+                        <article class="product product--compact" data-product data-reveal>
+                            <div class="product-media">
+                                <img src="assets/banho-1-800.webp" srcset="assets/banho-1-480.webp 480w, assets/banho-1-800.webp 800w"
+                                     sizes="(max-width: 600px) 76vw, (max-width: 920px) 44vw, 340px" width="800" height="1067" loading="lazy" decoding="async"
+                                     alt="Saquinho kraft com janela mostrando pétalas secas vermelho-escuras">
+                            </div>
+                            <div class="product-body">
+                                <h4 class="product-name">Banho de Atração e Autoestima</h4>
+                                <p class="product-desc">Banho de ervas voltado à atração e à autoestima.</p>
+                                <p class="product-price"><span class="price-tag"><small>R$</small>12</span></p>
+                                <button class="btn btn-gold btn-block" type="button" data-add data-id="banho-1" data-name="Banho de Atração e Autoestima" data-price="12" data-kind="produto">
+                                    <svg aria-hidden="true"><use href="#i-plus"/></svg><span>Adicionar ao pedido</span>
+                                </button>
+                            </div>
+                        </article>
+
+                        <article class="product product--compact" data-product data-reveal>
+                            <div class="product-media">
+                                <img src="assets/banho-2-800.webp" srcset="assets/banho-2-480.webp 480w, assets/banho-2-800.webp 800w"
+                                     sizes="(max-width: 600px) 76vw, (max-width: 920px) 44vw, 340px" width="800" height="1067" loading="lazy" decoding="async"
+                                     alt="Saquinho kraft com janela mostrando folhas secas de louro e pétalas laranja">
+                            </div>
+                            <div class="product-body">
+                                <h4 class="product-name">Banho de Louro e Calêndula</h4>
+                                <p class="product-desc">Banho de ervas secas.</p>
+                                <p class="product-price"><span class="price-tag"><small>R$</small>12</span></p>
+                                <button class="btn btn-gold btn-block" type="button" data-add data-id="banho-2" data-name="Banho de Louro e Calêndula" data-price="12" data-kind="produto">
+                                    <svg aria-hidden="true"><use href="#i-plus"/></svg><span>Adicionar ao pedido</span>
+                                </button>
+                            </div>
+                        </article>
+
+                        <article class="product product--compact" data-product data-reveal>
+                            <!-- Foto pendente: trocar este bloco por um <img> (assets/banho-3-480.webp / -800.webp) -->
+                            <div class="product-media product-media--placeholder" role="img" aria-label="Foto do banho em breve">
+                                <svg class="pouch" viewBox="0 0 120 160" aria-hidden="true">
+                                    <path d="M18 18q0-8 8-8h68q8 0 8 8v128q0 6-6 6H24q-6 0-6-6z" fill="#d9bd8f"/>
+                                    <path d="M18 34h84" stroke="#c4a473" stroke-width="2"/>
+                                    <path d="M18 40h84" stroke="#c4a473" stroke-width="1" stroke-dasharray="3 3"/>
+                                    <rect x="28" y="78" width="64" height="36" rx="3" fill="#eef0e4" opacity=".85"/>
+                                    <g stroke="#6f7f5c" stroke-width="1.6" stroke-linecap="round">
+                                        <path d="M34 108l10-18M42 110l6-22M52 108l-4-20M58 110l10-20M66 108l-2-22M74 110l8-18M82 108l-6-20M38 96l8-4M62 92l9 3"/>
+                                    </g>
+                                    <path d="M46 98q6-8 14-4-6 7-14 4zM70 100q6-9 13-5-6 8-13 5z" fill="#8b9a6c"/>
+                                </svg>
+                                <span class="placeholder-text">Foto em breve</span>
+                            </div>
+                            <div class="product-body">
+                                <h4 class="product-name">Banho de Alecrim</h4>
+                                <p class="product-desc">Banho de ervas secas.</p>
+                                <p class="product-price"><span class="price-tag"><small>R$</small>12</span></p>
+                                <button class="btn btn-gold btn-block" type="button" data-add data-id="banho-3" data-name="Banho de Alecrim" data-price="12" data-kind="produto">
+                                    <svg aria-hidden="true"><use href="#i-plus"/></svg><span>Adicionar ao pedido</span>
+                                </button>
+                            </div>
+                        </article>
+                    </div>
+                    <div class="rail-dots" data-rail-dots aria-hidden="true"></div>
+                </div>
+            </div>
+        </section>
+
         <!-- ============ QUEM SOU ============ -->
-        <section class="section section--tint" id="sobre" aria-labelledby="sobre-title">
+        <section class="section" id="sobre" aria-labelledby="sobre-title">
             <div class="container">
                 <header class="section-head" data-reveal>
                     <h2 class="display" id="sobre-title">Quem sou</h2>
@@ -582,7 +762,7 @@
         </section>
 
         <!-- ============ COMO FUNCIONA ============ -->
-        <section class="section" id="como-funciona" aria-labelledby="como-title">
+        <section class="section section--tint" id="como-funciona" aria-labelledby="como-title">
             <div class="container">
                 <header class="section-head" data-reveal>
                     <h2 class="display" id="como-title">Funcionamento</h2>
@@ -661,7 +841,7 @@
     <!-- Barra flutuante do pedido (mobile) -->
     <button class="cart-fab" type="button" data-cart-open data-page aria-controls="carrinho" aria-haspopup="dialog" hidden>
         <span class="cart-fab-count"><span data-cart-count>0</span> <span data-cart-count-label>itens</span></span>
-        <strong data-cart-total>R$ 0,00</strong>
+        <strong class="cart-fab-total"><small data-total-from hidden>a partir de</small><span data-cart-total>R$ 0,00</span></strong>
         <span class="cart-fab-cta">Ver pedido <svg aria-hidden="true"><use href="#i-arrow"/></svg></span>
     </button>
 
@@ -690,16 +870,17 @@
         </div>
 
         <footer class="drawer-foot" data-cart-foot hidden>
-            <label class="rush">
+            <label class="rush" data-rush-wrap>
                 <input type="checkbox" data-rush>
                 <span class="rush-box" aria-hidden="true"><svg><use href="#i-check"/></svg></span>
                 <span class="rush-text">Furar fila <small>Atendimento imediato</small></span>
                 <span class="rush-price">+ R$ 50</span>
             </label>
             <div class="cart-total">
-                <span>Total</span>
-                <strong data-cart-total>R$ 0,00</strong>
+                <span data-total-label>Total</span>
+                <strong><small data-total-from hidden>a partir de</small> <span data-cart-total>R$ 0,00</span></strong>
             </div>
+            <p class="cart-variable-note" data-variable-note hidden>O valor das velas pode subir conforme a cor e a essência. O preço final é confirmado no WhatsApp.</p>
             <button class="btn btn-forest btn-block" type="button" data-checkout>
                 <svg aria-hidden="true"><use href="#i-whatsapp"/></svg>
                 Finalizar no WhatsApp

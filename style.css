@@ -496,6 +496,7 @@ p {
 .site-nav a {
     position: relative;
     padding: 0.45rem 0;
+    white-space: nowrap;
     font-size: 0.93rem;
     font-weight: 400;
     color: var(--text);
@@ -1667,6 +1668,352 @@ p {
     color: var(--gold);
 }
 
+/* ---------- Velas & banhos ---------- */
+.shop-group + .shop-group {
+    margin-top: clamp(3.5rem, 8vw, 5.5rem);
+}
+
+.shop-head {
+    display: grid;
+    justify-items: center;
+    gap: 0.55rem;
+    margin-bottom: clamp(1.6rem, 4vw, 2.4rem);
+    text-align: center;
+}
+
+.shop-head h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(1.8rem, 1.4rem + 1.4vw, 2.4rem);
+    line-height: 1.1;
+}
+
+.shop-head p {
+    max-width: 40rem;
+    font-size: 0.98rem;
+}
+
+.shop-note {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.55rem 1rem;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: rgba(197, 165, 89, 0.12);
+    color: var(--ink);
+    font-size: 0.86rem;
+    line-height: 1.4;
+    text-wrap: balance;
+}
+
+.shop-note svg {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+    color: var(--gold);
+}
+
+.shop-rail {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(1.2rem, 2.6vw, 2rem);
+}
+
+.product {
+    display: flex;
+    flex-direction: column;
+    padding: 0.7rem 0.7rem 1.2rem;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    box-shadow: var(--shadow-soft);
+    transition: transform 0.45s var(--ease), box-shadow 0.45s var(--ease);
+}
+
+@media (hover: hover) {
+    .product:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lift);
+    }
+
+    .product:hover .product-media img {
+        scale: 1.05;
+    }
+}
+
+.product-media {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 4 / 5;
+    border-radius: 170px 170px 16px 16px;
+    background: var(--cream-deep);
+}
+
+.product-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: scale 0.9s var(--ease);
+}
+
+/* Foto chegando: a imagem "assenta" quando o card aparece */
+.js .product[data-reveal] .product-media img {
+    scale: 1.1;
+}
+
+.js .product[data-reveal].is-visible .product-media img {
+    scale: 1;
+}
+
+.product-media--placeholder {
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 0.8rem;
+    background:
+        radial-gradient(60% 50% at 50% 40%, rgba(255, 255, 255, 0.6), transparent 70%),
+        var(--cream-deep);
+}
+
+.pouch {
+    width: 46%;
+    height: auto;
+    filter: drop-shadow(0 12px 16px rgba(62, 47, 47, 0.18));
+}
+
+.placeholder-text {
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--gold-ink);
+}
+
+.product-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    padding: 1.1rem 0.55rem 0;
+}
+
+.product-name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.55rem;
+    line-height: 1.15;
+}
+
+.product-desc {
+    margin-top: -0.45rem;
+    font-size: 0.92rem;
+    line-height: 1.5;
+}
+
+.product-price {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.product-price .from {
+    font-size: 0.74rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.product .btn {
+    margin-top: auto;
+}
+
+/* Escolha de essência e cor */
+.opts {
+    display: grid;
+    gap: 0.9rem;
+    padding: 0.95rem;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: var(--cream);
+    transition: border-color 0.3s var(--ease);
+}
+
+.opts.has-error {
+    border-color: rgba(155, 61, 61, 0.55);
+    animation: shake 0.45s var(--ease);
+}
+
+@keyframes shake {
+    20% { translate: -6px 0; }
+    45% { translate: 5px 0; }
+    70% { translate: -3px 0; }
+}
+
+.opt-field {
+    display: grid;
+    gap: 0.45rem;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.opt-label {
+    padding: 0;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--slate);
+}
+
+.opt-chosen {
+    margin-left: 0.2rem;
+    font-size: 0.82rem;
+    letter-spacing: 0.04em;
+    text-transform: none;
+    color: var(--gold-ink);
+}
+
+.select-wrap {
+    position: relative;
+    display: block;
+}
+
+.select-wrap::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 1rem;
+    width: 8px;
+    height: 8px;
+    margin-top: -6px;
+    border-right: 1.5px solid var(--gold-ink);
+    border-bottom: 1.5px solid var(--gold-ink);
+    transform: rotate(45deg);
+    pointer-events: none;
+}
+
+.select-wrap select {
+    width: 100%;
+    height: 46px;
+    padding: 0 2.6rem 0 0.95rem;
+    border: 1px solid var(--line-strong);
+    border-radius: 12px;
+    background: var(--paper);
+    color: var(--ink);
+    font: inherit;
+    font-size: 1rem; /* 16px: evita o zoom automático do iPhone ao tocar */
+    -webkit-appearance: none;
+    appearance: none;
+    cursor: pointer;
+    transition: border-color 0.25s var(--ease), box-shadow 0.25s var(--ease);
+}
+
+.select-wrap select.is-empty {
+    color: var(--text);
+}
+
+.select-wrap select:focus-visible {
+    outline: none;
+    border-color: var(--gold-ink);
+    box-shadow: 0 0 0 3px rgba(197, 165, 89, 0.35);
+}
+
+.select-wrap select[aria-invalid="true"] {
+    border-color: var(--danger);
+}
+
+.swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+}
+
+.swatch {
+    --sw: #ccc;
+    position: relative;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--sw);
+    box-shadow: inset 0 0 0 1px rgba(31, 42, 39, 0.2);
+    cursor: pointer;
+    transition: transform 0.25s var(--ease-spring), box-shadow 0.25s var(--ease);
+}
+
+.swatch input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.swatch:has(input:checked) {
+    transform: scale(1.08);
+    box-shadow:
+        inset 0 0 0 1px rgba(31, 42, 39, 0.2),
+        0 0 0 3px var(--cream),
+        0 0 0 5px var(--gold);
+}
+
+.swatch:has(input:focus-visible) {
+    outline: 2px solid var(--gold-ink);
+    outline-offset: 6px;
+}
+
+.swatch:has(input[aria-invalid="true"]) {
+    box-shadow: inset 0 0 0 1px rgba(31, 42, 39, 0.2), 0 0 0 2px rgba(155, 61, 61, 0.55);
+}
+
+.swatch:active {
+    transform: scale(0.92);
+}
+
+.swatch--branca { --sw: #f8f5ee; }
+.swatch--vermelha { --sw: #a12d2f; }
+.swatch--rosa { --sw: #e6a6b6; }
+.swatch--roxa { --sw: #5c3a78; }
+.swatch--lilas { --sw: #b9a3d9; }
+.swatch--preta { --sw: #1f1d1e; }
+
+.opt-error {
+    font-size: 0.86rem;
+    font-weight: 500;
+    color: var(--danger);
+}
+
+.rail-dots {
+    display: none;
+}
+
+/* Pedido: detalhes das velas */
+.cart-item-detail {
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--gold-ink);
+}
+
+.cart-item-total small {
+    display: block;
+    font-family: var(--font-body);
+    font-size: 0.66rem;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text);
+}
+
+.cart-variable-note {
+    padding: 0.65rem 0.85rem;
+    border-radius: 12px;
+    background: rgba(197, 165, 89, 0.12);
+    font-size: 0.8rem;
+    line-height: 1.45;
+}
+
 /* ---------- Quem sou ---------- */
 .about {
     display: grid;
@@ -2280,11 +2627,12 @@ p {
 
 .cart-total {
     display: flex;
-    align-items: baseline;
+    align-items: flex-end;
     justify-content: space-between;
 }
 
-.cart-total span {
+.cart-total > span {
+    white-space: nowrap;
     font-size: 0.78rem;
     font-weight: 500;
     letter-spacing: 0.22em;
@@ -2292,10 +2640,23 @@ p {
 }
 
 .cart-total strong {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.25rem;
     font-family: var(--font-display);
     font-size: 2.1rem;
     line-height: 1;
     font-variant-numeric: lining-nums tabular-nums;
+}
+
+.cart-total strong small {
+    font-family: var(--font-body);
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text);
 }
 
 .drawer-note {
@@ -2494,6 +2855,15 @@ p {
     .steps {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+
+    /* menu com 6 links: libera espaço no cabeçalho em telas médias */
+    .brand-sub {
+        display: none;
+    }
+
+    .site-nav {
+        gap: 1.1rem;
+    }
 }
 
 @media (max-width: 920px) {
@@ -2673,6 +3043,63 @@ p {
         color: rgba(243, 240, 233, 0.8);
     }
 
+    .cart-fab-total {
+        display: grid;
+        justify-items: start;
+        gap: 0.15rem;
+    }
+
+    .cart-fab-total small {
+        font-family: var(--font-body);
+        font-size: 0.6rem;
+        font-weight: 500;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: rgba(243, 240, 233, 0.75);
+    }
+
+    /* Velas e banhos viram um carrossel de arrastar para o lado */
+    .shop-rail {
+        display: flex;
+        gap: 1rem;
+        margin-inline: calc(var(--gutter) * -1);
+        padding: 0.4rem var(--gutter) 1.2rem;
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+        scroll-snap-type: x mandatory;
+        scroll-padding-inline: var(--gutter);
+        scrollbar-width: none;
+    }
+
+    .shop-rail::-webkit-scrollbar {
+        display: none;
+    }
+
+    .product {
+        flex: 0 0 min(76vw, 330px);
+        scroll-snap-align: start;
+    }
+
+    .rail-dots {
+        display: flex;
+        justify-content: center;
+        gap: 6px;
+        margin-top: 0.2rem;
+    }
+
+    .rail-dots span {
+        width: 6px;
+        height: 6px;
+        border-radius: 99px;
+        background: var(--line-strong);
+        transition: width 0.35s var(--ease), background-color 0.35s var(--ease);
+    }
+
+    .rail-dots span.is-active {
+        width: 20px;
+        background: var(--gold);
+    }
+
     .cart-fab-cta {
         display: inline-flex;
         align-items: center;
@@ -2816,6 +3243,15 @@ p {
 
     .corner--soft {
         opacity: 0.25;
+    }
+
+    .swatches {
+        gap: 0.45rem;
+    }
+
+    .swatch {
+        width: 30px;
+        height: 30px;
     }
 
     /* Pedido sobe de baixo, como nos apps; arraste para baixo para fechar */
