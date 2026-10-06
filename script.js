@@ -1,165 +1,469 @@
 /**
- * SISTEMA DE E-COMMERCE - NOCTUN TAROT
- * Gerenciamento de Estado e UI Dinâmica
+ * NOCTUN TAROT — pedido (carrinho), menu e animações
+ *
+ * Os produtos são lidos dos botões [data-add] do HTML (data-id, data-name, data-price).
+ * Para mudar nome ou preço de um serviço, altere o botão e o preço exibido ao lado dele.
  */
+(() => {
+    'use strict';
 
-// 1. Estado da Aplicação (Onde os dados vivem)
-let carrinho = [];
+    const WHATSAPP_NUMBER = '5524999894376';
+    const RUSH = { name: 'Furar fila (atendimento imediato)', price: 50 };
+    const STORAGE_KEY = 'noctun:pedido:v1';
+    const MAX_QTY = 20;
 
-// 2. Referências do DOM (Elementos que vamos manipular)
-const cartSidebar = document.getElementById('cart-sidebar');
-const cartOverlay = document.getElementById('cart-overlay');
-const cartItemsContainer = document.getElementById('cart-items');
-const cartBadge = document.getElementById('cart-badge');
-const cartTotalValue = document.getElementById('cart-total-value');
-const toastContainer = document.getElementById('toast-container');
+    const brl = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+    const formatBRL = (value) => brl.format(value);
+    const plural = (n) => (n === 1 ? 'item' : 'itens');
 
-// 3. Funções Principais do Carrinho
+    // =====================================================
+    // 1. Catálogo (fonte única: os botões do HTML)
+    // =====================================================
+    const catalog = new Map();
+    document.querySelectorAll('[data-add]').forEach((btn) => {
+        const { id, name } = btn.dataset;
+        const price = Number(btn.dataset.price);
+        if (!id || !name || !Number.isFinite(price)) return;
+        catalog.set(id, { name, price });
+        btn.setAttribute('aria-label', `Adicionar ${name} ao pedido`);
+    });
 
-function adicionarAoCarrinho(nomeProduto, preco) {
-    // Cria o objeto do item
-    const item = {
-        id: Date.now(), // Gera um ID único baseado no tempo
-        nome: nomeProduto,
-        preco: preco
+    // =====================================================
+    // 2. Estado do pedido
+    //    Guardamos só id + quantidade; nome e preço vêm sempre
+    //    do catálogo atual (evita preço antigo salvo no navegador).
+    // =====================================================
+    let state = loadState();
+
+    function clampQty(value) {
+        const qty = Math.floor(Number(value));
+        return Number.isFinite(qty) ? Math.min(Math.max(qty, 1), MAX_QTY) : 1;
+    }
+
+    function loadState() {
+        const empty = { items: [], rush: false };
+        try {
+            const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+            if (!data || !Array.isArray(data.items)) return empty;
+
+            const merged = new Map();
+            data.items.forEach((item) => {
+                if (!item || !catalog.has(item.id)) return;
+                merged.set(item.id, clampQty((merged.get(item.id) || 0) + clampQty(item.qty)));
+            });
+            const items = [...merged].map(([id, qty]) => ({ id, qty }));
+            return { items, rush: Boolean(data.rush) && items.length > 0 };
+        } catch {
+            return empty;
+        }
+    }
+
+    function saveState() {
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        } catch {
+            // Navegação privada ou armazenamento bloqueado: o pedido segue só nesta aba.
+        }
+    }
+
+    function lineItems() {
+        return state.items.map(({ id, qty }) => {
+            const { name, price } = catalog.get(id);
+            return { id, qty, name, price, total: price * qty };
+        });
+    }
+
+    const itemCount = () => state.items.reduce((sum, item) => sum + item.qty, 0);
+    const rushActive = () => state.rush && state.items.length > 0;
+    const orderTotal = () =>
+        lineItems().reduce((sum, item) => sum + item.total, 0) + (rushActive() ? RUSH.price : 0);
+
+    function findItem(id) {
+        return state.items.find((item) => item.id === id);
+    }
+
+    function addItem(id) {
+        const item = findItem(id);
+        if (item) item.qty = clampQty(item.qty + 1);
+        else state.items.push({ id, qty: 1 });
+        commit();
+    }
+
+    function setQty(id, qty) {
+        const item = findItem(id);
+        if (!item) return;
+        item.qty = clampQty(qty);
+        commit();
+    }
+
+    function removeItem(id) {
+        state.items = state.items.filter((item) => item.id !== id);
+        if (!state.items.length) state.rush = false;
+        commit();
+    }
+
+    function commit() {
+        saveState();
+        render();
+    }
+
+    // =====================================================
+    // 3. Interface do pedido
+    // =====================================================
+    const ui = {
+        list: document.querySelector('[data-cart-list]'),
+        empty: document.querySelector('[data-cart-empty]'),
+        foot: document.querySelector('[data-cart-foot]'),
+        counts: document.querySelectorAll('[data-cart-count]'),
+        countLabels: document.querySelectorAll('[data-cart-count-label]'),
+        totals: document.querySelectorAll('[data-cart-total]'),
+        badge: document.querySelector('.badge'),
+        cartBtn: document.querySelector('.cart-btn'),
+        fab: document.querySelector('.cart-fab'),
+        rush: document.querySelector('[data-rush]'),
+        checkout: document.querySelector('[data-checkout]'),
     };
 
-    // Atualiza o estado
-    carrinho.push(item);
-    
-    // Atualiza a Interface
-    atualizarUI();
-    
-    // Mostra notificação de sucesso
-    mostrarToast(`${nomeProduto} adicionado!`);
-}
-
-function removerDoCarrinho(idItem) {
-    // Filtra o array, removendo o item com o ID correspondente
-    carrinho = carrinho.filter(item => item.id !== idItem);
-    atualizarUI();
-}
-
-function calcularTotal() {
-    // Reduz o array somando os preços
-    return carrinho.reduce((total, item) => total + item.preco, 0);
-}
-
-function atualizarUI() {
-    // Atualiza a bolinha (badge) do carrinho no Header
-    cartBadge.textContent = carrinho.length;
-
-    // Atualiza o valor total formatado
-    const total = calcularTotal();
-    cartTotalValue.textContent = formatarMoeda(total);
-
-    // Limpa a lista atual do HTML
-    cartItemsContainer.innerHTML = '';
-
-    // Renderiza os itens baseados no estado
-    if (carrinho.length === 0) {
-        cartItemsContainer.innerHTML = '<p class="empty-cart">Seu carrinho está vazio.</p>';
-        return;
-    }
-
-    carrinho.forEach(item => {
-        const divElement = document.createElement('div');
-        divElement.classList.add('cart-item');
-        
-        divElement.innerHTML = `
-            <div class="item-info">
-                <h4>${item.nome}</h4>
-                <p>${formatarMoeda(item.preco)}</p>
+    const ITEM_TEMPLATE = `
+        <div>
+            <p class="cart-item-name"></p>
+            <p class="cart-item-unit"></p>
+        </div>
+        <p class="cart-item-total"></p>
+        <div class="cart-item-actions">
+            <div class="qty" role="group">
+                <button type="button" data-action="dec"><svg aria-hidden="true"><use href="#i-minus"/></svg></button>
+                <output></output>
+                <button type="button" data-action="inc"><svg aria-hidden="true"><use href="#i-plus"/></svg></button>
             </div>
-            <button class="btn-remove" onclick="removerDoCarrinho(${item.id})" title="Remover item">
-                <span class="material-symbols-outlined">delete</span>
+            <button type="button" class="remove-btn" data-action="remove">
+                <svg aria-hidden="true"><use href="#i-trash"/></svg>Remover
             </button>
-        `;
-        
-        cartItemsContainer.appendChild(divElement);
+        </div>`;
+
+    function createItemEl(id) {
+        const li = document.createElement('li');
+        li.className = 'cart-item';
+        li.dataset.id = id;
+        li.innerHTML = ITEM_TEMPLATE; // template fixo; dados entram só via textContent
+        return li;
+    }
+
+    function updateItemEl(li, item) {
+        li.querySelector('.cart-item-name').textContent = item.name;
+        li.querySelector('.cart-item-unit').textContent =
+            item.qty > 1 ? `${item.qty} × ${formatBRL(item.price)}` : formatBRL(item.price);
+        li.querySelector('.cart-item-total').textContent = formatBRL(item.total);
+        li.querySelector('output').textContent = String(item.qty);
+
+        li.querySelector('.qty').setAttribute('aria-label', `Quantidade de ${item.name}`);
+        const dec = li.querySelector('[data-action="dec"]');
+        const inc = li.querySelector('[data-action="inc"]');
+        dec.setAttribute('aria-label', `Diminuir quantidade de ${item.name}`);
+        inc.setAttribute('aria-label', `Aumentar quantidade de ${item.name}`);
+        dec.disabled = item.qty <= 1;
+        inc.disabled = item.qty >= MAX_QTY;
+        li.querySelector('[data-action="remove"]').setAttribute('aria-label', `Remover ${item.name} do pedido`);
+    }
+
+    // Atualiza a lista no lugar (sem recriar tudo), para não perder o foco
+    // de quem usa teclado nem repetir a animação de entrada a cada clique.
+    function renderList(items) {
+        const existing = new Map([...ui.list.children].map((li) => [li.dataset.id, li]));
+        items.forEach((item) => {
+            let li = existing.get(item.id);
+            if (!li) {
+                li = createItemEl(item.id);
+                ui.list.append(li);
+            }
+            existing.delete(item.id);
+            updateItemEl(li, item);
+        });
+        existing.forEach((li) => li.remove());
+    }
+
+    function render() {
+        const items = lineItems();
+        const count = itemCount();
+        const hasItems = items.length > 0;
+        const totalText = formatBRL(orderTotal());
+
+        ui.counts.forEach((el) => { el.textContent = String(count); });
+        ui.countLabels.forEach((el) => { el.textContent = plural(count); });
+        ui.totals.forEach((el) => { el.textContent = totalText; });
+
+        ui.badge.hidden = !hasItems;
+        ui.cartBtn.setAttribute('aria-label', hasItems ? `Abrir seu pedido (${count} ${plural(count)})` : 'Abrir seu pedido');
+        ui.fab.hidden = !hasItems;
+        document.body.classList.toggle('has-fab', hasItems);
+
+        ui.empty.hidden = hasItems;
+        ui.foot.hidden = !hasItems;
+        ui.rush.checked = rushActive();
+
+        renderList(items);
+    }
+
+    function bumpBadge() {
+        ui.badge.classList.remove('bump');
+        void ui.badge.offsetWidth; // reinicia a animação
+        ui.badge.classList.add('bump');
+    }
+
+    // Feedback no próprio botão: "Adicionado" por um instante
+    const flashTimers = new WeakMap();
+    function flashAdded(btn) {
+        const label = btn.querySelector('span');
+        const icon = btn.querySelector('use');
+        if (!label || !icon) return;
+        if (!btn.dataset.label) btn.dataset.label = label.textContent;
+
+        clearTimeout(flashTimers.get(btn));
+        btn.classList.add('is-added');
+        label.textContent = 'Adicionado';
+        icon.setAttribute('href', '#i-check');
+
+        flashTimers.set(btn, setTimeout(() => {
+            btn.classList.remove('is-added');
+            label.textContent = btn.dataset.label;
+            icon.setAttribute('href', '#i-plus');
+        }, 1600));
+    }
+
+    // =====================================================
+    // 4. Avisos (toast) — anunciados por leitores de tela
+    // =====================================================
+    const toastRegion = document.querySelector('[data-toasts]');
+
+    function toast(message) {
+        const el = document.createElement('div');
+        el.className = 'toast';
+        el.innerHTML = '<svg aria-hidden="true"><use href="#i-check"/></svg>';
+        const text = document.createElement('span');
+        text.textContent = message;
+        el.append(text);
+        toastRegion.append(el);
+
+        while (toastRegion.children.length > 2) toastRegion.firstElementChild.remove();
+
+        setTimeout(() => {
+            el.classList.add('is-leaving');
+            setTimeout(() => el.remove(), 320);
+        }, 2600);
+    }
+
+    // =====================================================
+    // 5. Gaveta do pedido (diálogo modal)
+    // =====================================================
+    const drawer = document.getElementById('carrinho');
+    const backdrop = document.querySelector('.drawer-backdrop');
+    const closeBtn = drawer.querySelector('.drawer-head [data-cart-close]');
+    const pageRegions = document.querySelectorAll('[data-page]');
+    let lastFocus = null;
+
+    const isCartOpen = () => drawer.classList.contains('is-open');
+
+    function openCart() {
+        if (isCartOpen()) return;
+        lastFocus = document.activeElement;
+        setMenu(false);
+        toastRegion.replaceChildren(); // avisos ficariam por cima do cabeçalho da gaveta
+
+        drawer.inert = false;
+        drawer.classList.add('is-open');
+        backdrop.classList.add('is-open');
+        // Torna o resto da página inerte: o foco fica preso dentro do pedido
+        pageRegions.forEach((el) => { el.inert = true; });
+        document.body.classList.add('no-scroll');
+        closeBtn.focus({ preventScroll: true });
+    }
+
+    function closeCart({ restoreFocus = true } = {}) {
+        if (!isCartOpen()) return;
+        drawer.classList.remove('is-open');
+        backdrop.classList.remove('is-open');
+        drawer.inert = true;
+        pageRegions.forEach((el) => { el.inert = false; });
+        document.body.classList.remove('no-scroll');
+
+        if (restoreFocus && lastFocus && document.contains(lastFocus)) {
+            lastFocus.focus({ preventScroll: true });
+        }
+    }
+
+    // =====================================================
+    // 6. Finalizar no WhatsApp
+    // =====================================================
+    function buildMessage() {
+        const lines = ['Olá, Guilherme! 🔮 Vim pelo site e gostaria de fazer este pedido:', ''];
+        lineItems().forEach((item) => {
+            lines.push(`• ${item.qty}× ${item.name} — ${formatBRL(item.total)}`);
+        });
+        if (rushActive()) lines.push(`• ${RUSH.name} — ${formatBRL(RUSH.price)}`);
+        lines.push(
+            '',
+            `*Total: ${formatBRL(orderTotal())}*`,
+            '',
+            '*Meus dados:*',
+            'Nome completo: ',
+            'Data de nascimento: ',
+            'Contexto da história: ',
+        );
+        return lines.join('\n');
+    }
+
+    function checkout() {
+        if (!state.items.length) {
+            toast('Adicione uma leitura ao pedido primeiro.');
+            return;
+        }
+        const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(buildMessage())}`;
+        window.open(url, '_blank', 'noopener');
+    }
+
+    // =====================================================
+    // 7. Menu mobile
+    // =====================================================
+    const header = document.querySelector('.site-header');
+    const nav = document.getElementById('menu-principal');
+    const menuBtn = document.querySelector('.menu-btn');
+
+    function setMenu(open) {
+        nav.classList.toggle('is-open', open);
+        header.classList.toggle('menu-open', open);
+        menuBtn.setAttribute('aria-expanded', String(open));
+        menuBtn.setAttribute('aria-label', open ? 'Fechar menu' : 'Abrir menu');
+        menuBtn.querySelector('use').setAttribute('href', open ? '#i-close' : '#i-menu');
+    }
+
+    menuBtn.addEventListener('click', () => setMenu(!nav.classList.contains('is-open')));
+
+    // =====================================================
+    // 8. Eventos (delegação: sem onclick no HTML)
+    // =====================================================
+    document.addEventListener('click', (event) => {
+        const addBtn = event.target.closest('[data-add]');
+        if (addBtn) {
+            const product = catalog.get(addBtn.dataset.id);
+            if (!product) return;
+            addItem(addBtn.dataset.id);
+            flashAdded(addBtn);
+            bumpBadge();
+            toast(`Adicionado ao pedido: ${product.name}`);
+            return;
+        }
+
+        if (event.target.closest('[data-cart-open]')) {
+            openCart();
+            return;
+        }
+
+        const closer = event.target.closest('[data-cart-close]');
+        if (closer) {
+            // Link "Ver leituras" dentro do pedido: deixa o foco seguir para a seção
+            closeCart({ restoreFocus: closer.tagName !== 'A' });
+            return;
+        }
+
+        if (event.target.closest('[data-checkout]')) {
+            checkout();
+            return;
+        }
+
+        if (nav.classList.contains('is-open') && (event.target.closest('.site-nav a') || !event.target.closest('.site-header'))) {
+            setMenu(false);
+        }
     });
-}
 
-// 4. Controle de Modais e Interações Visuais
+    ui.list.addEventListener('click', (event) => {
+        const btn = event.target.closest('[data-action]');
+        if (!btn) return;
+        const li = btn.closest('.cart-item');
+        const id = li.dataset.id;
+        const item = findItem(id);
+        if (!item) return;
 
-// 4. Controle de Modais e Interações Visuais
+        if (btn.dataset.action === 'inc') setQty(id, item.qty + 1);
+        if (btn.dataset.action === 'dec') setQty(id, item.qty - 1);
 
-function toggleCart() {
-    // Alterna a classe 'open' no sidebar e 'active' no overlay escuro
-    cartSidebar.classList.toggle('open');
-    cartOverlay.classList.toggle('active');
+        // Se o botão focado ficou desabilitado (limite), leva o foco ao vizinho
+        if (btn.disabled) {
+            li.querySelector(btn.dataset.action === 'dec' ? '[data-action="inc"]' : '[data-action="dec"]').focus();
+        }
 
-    // MOBILE FIX: Trava a rolagem da página de fundo quando o carrinho estiver aberto
-    if (cartSidebar.classList.contains('open')) {
-        document.body.style.overflow = 'hidden';
-    } else {
-        document.body.style.overflow = 'auto';
-    }
-}
-
-function mostrarToast(mensagem) {
-    // Cria o elemento da notificação
-    const toast = document.createElement('div');
-    toast.classList.add('toast');
-    toast.textContent = mensagem;
-
-    // Adiciona ao container na tela
-    toastContainer.appendChild(toast);
-
-    // Adiciona classe para fazer a animação de entrada
-    setTimeout(() => toast.classList.add('show'), 10);
-
-    // Remove da tela após 3 segundos
-    setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 400); // Aguarda a animação de saída
-    }, 3000);
-}
-
-// 5. Integração com WhatsApp (Checkout)
-
-function finalizarCompra() {
-    if (carrinho.length === 0) {
-        mostrarToast("Adicione itens ao carrinho primeiro!");
-        return;
-    }
-
-    const telefone = "5524999894376"; 
-    
-    // Constrói a mensagem mapeando os itens do carrinho
-    let textoPedido = "🔮 *Olá Guilherme! Gostaria de agendar/solicitar os seguintes itens:*\n\n";
-    
-    carrinho.forEach((item, index) => {
-        textoPedido += `${index + 1}. ${item.nome} - ${formatarMoeda(item.preco)}\n`;
+        if (btn.dataset.action === 'remove') {
+            const next = li.nextElementSibling || li.previousElementSibling;
+            removeItem(id);
+            (next ? next.querySelector('[data-action="remove"]') : closeBtn).focus();
+        }
     });
 
-    // Adiciona o total e os campos requeridos
-    textoPedido += `\n*Total do Pedido:* ${formatarMoeda(calcularTotal())}\n`;
-    textoPedido += `\n-------------------------\n`;
-    textoPedido += `*Meus Dados:*\n`;
-    textoPedido += `- Nome Completo: \n`;
-    textoPedido += `- Data de Nascimento: \n`;
-    textoPedido += `- Contexto/História: \n`;
+    ui.rush.addEventListener('change', () => {
+        state.rush = ui.rush.checked;
+        commit();
+    });
 
-    // Codifica para formato URL
-    const urlFormatada = encodeURIComponent(textoPedido);
-    
-    // Abre a janela do WhatsApp com a mensagem pronta
-    window.open(`https://wa.me/${telefone}?text=${urlFormatada}`, '_blank');
-}
+    document.addEventListener('keydown', (event) => {
+        if (event.key !== 'Escape') return;
+        if (isCartOpen()) closeCart();
+        else if (nav.classList.contains('is-open')) {
+            setMenu(false);
+            menuBtn.focus();
+        }
+    });
 
-// 6. Funções Utilitárias
+    // Mantém o pedido sincronizado entre abas abertas
+    window.addEventListener('storage', (event) => {
+        if (event.key !== STORAGE_KEY) return;
+        state = loadState();
+        render();
+    });
 
-function formatarMoeda(valor) {
-    return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-}
+    // =====================================================
+    // 9. Cabeçalho, seção ativa e animações de entrada
+    // =====================================================
+    const onScroll = () => header.classList.toggle('is-scrolled', window.scrollY > 8);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
 
-// Efeito de sombra na Navbar ao rolar a página
-window.addEventListener('scroll', () => {
-    const navbar = document.getElementById('navbar');
-    if (window.scrollY > 50) {
-        navbar.style.boxShadow = '0 4px 20px rgba(0,0,0,0.5)';
-    } else {
-        navbar.style.boxShadow = 'none';
+    const revealEls = document.querySelectorAll('[data-reveal]');
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if ('IntersectionObserver' in window) {
+        const navLinks = [...nav.querySelectorAll('a[href^="#"]')];
+        const spied = [document.getElementById('inicio'), ...navLinks.map((a) => document.querySelector(a.getAttribute('href')))].filter(Boolean);
+
+        const spy = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (!entry.isIntersecting) return;
+                navLinks.forEach((a) => {
+                    const active = a.getAttribute('href') === `#${entry.target.id}`;
+                    a.classList.toggle('is-active', active);
+                    if (active) a.setAttribute('aria-current', 'true');
+                    else a.removeAttribute('aria-current');
+                });
+            });
+        }, { rootMargin: '-45% 0px -50% 0px' });
+        spied.forEach((section) => spy.observe(section));
     }
-});
+
+    if (reduceMotion || !('IntersectionObserver' in window)) {
+        revealEls.forEach((el) => el.classList.add('is-visible'));
+    } else {
+        const revealer = new IntersectionObserver((entries, observer) => {
+            entries.forEach((entry) => {
+                if (!entry.isIntersecting) return;
+                entry.target.classList.add('is-visible');
+                observer.unobserve(entry.target);
+            });
+        }, { rootMargin: '0px 0px -8% 0px', threshold: 0.12 });
+        revealEls.forEach((el) => revealer.observe(el));
+    }
+
+    document.querySelectorAll('[data-year]').forEach((el) => {
+        el.textContent = String(new Date().getFullYear());
+    });
+
+    render();
+    document.documentElement.dataset.ready = '';
+})();

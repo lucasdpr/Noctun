@@ -3,160 +3,553 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Noctun Tarot | Consultas e Trabalhos</title>
+    <title>Noctun Tarot | Leituras de Tarot e Trabalhos Espirituais</title>
+    <meta name="description" content="Leituras de Tarot com Guilherme: perguntas avulsas, consultas, métodos Templo de Afrodite e Templo do Diabo e trabalho espiritual de auto-adoçamento. Pedido direto pelo WhatsApp.">
+    <meta name="theme-color" content="#f3f0e9">
+
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="pt_BR">
+    <meta property="og:site_name" content="Noctun Tarot">
+    <meta property="og:title" content="Noctun Tarot | Leituras de Tarot e Trabalhos Espirituais">
+    <meta property="og:description" content="Conecte-se com a sabedoria do invisível. Leituras claras e direcionadas ao autoconhecimento.">
+
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300..600&display=swap">
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+    <!-- Ativa as animações de entrada antes da pintura. Se o script.js não carregar,
+         remove a classe para o conteúdo nunca ficar escondido. -->
+    <script>
+        document.documentElement.classList.add('js');
+        setTimeout(function () {
+            if (!('ready' in document.documentElement.dataset)) document.documentElement.classList.remove('js');
+        }, 3000);
+    </script>
 </head>
 <body>
 
-    <header id="navbar">
-        <div class="nav-container">
-            <div class="logo">
-                <span class="material-symbols-outlined">auto_awesome</span>
-                Noctun Tarot
-            </div>
-            <nav class="nav-links">
-                <a href="#inicio">Início</a>
-                <a href="#servicos">Serviços</a>
-                <a href="#metodos">Tiragens</a>
-                <a href="#sobre">Quem Sou</a>
+    <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+
+    <!-- Ícones e ornamentos (referenciados com <use>) -->
+    <svg class="sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <linearGradient id="fade-l" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="86" y2="0"><stop offset="0" stop-color="#c5a559" stop-opacity="0"/><stop offset="1" stop-color="#c5a559"/></linearGradient>
+            <linearGradient id="fade-r" gradientUnits="userSpaceOnUse" x1="234" y1="0" x2="320" y2="0"><stop offset="0" stop-color="#c5a559"/><stop offset="1" stop-color="#c5a559" stop-opacity="0"/></linearGradient>
+        </defs>
+
+        <!-- Marca: lua crescente + estrela -->
+        <symbol id="mark" viewBox="0 0 32 32">
+            <path fill="currentColor" d="M12.34 7.06A10.5 10.5 0 1 0 23.78 19.65A8.6 8.6 0 0 1 12.34 7.06Z"/>
+            <path fill="currentColor" d="M23.6 6.4L24.52 10.68L28.8 11.6L24.52 12.52L23.6 16.8L22.68 12.52L18.4 11.6L22.68 10.68Z"/>
+        </symbol>
+
+        <symbol id="twinkle" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M12 1L13.56 10.44L23 12L13.56 13.56L12 23L10.44 13.56L1 12L10.44 10.44Z"/>
+        </symbol>
+
+        <!-- Canto art déco, inspirado nas molduras do catálogo -->
+        <symbol id="corner" viewBox="0 0 160 160">
+            <g fill="none" stroke="currentColor" stroke-linecap="round">
+                <path d="M0 152A152 152 0 0 0 152 0" stroke-width="2"/>
+                <path d="M0 134A134 134 0 0 0 134 0" stroke-width="1.2" stroke-dasharray="14 9"/>
+                <path d="M0 108A108 108 0 0 0 108 0" stroke-width="1"/>
+                <path d="M68.94 12.16L84.69 14.93M65.78 23.94L80.81 29.41M60.62 35L74.48 43M53.62 45L65.88 55.28M45 53.62L55.28 65.88M35 60.62L43 74.48M23.94 65.78L29.41 80.81M12.16 68.94L14.93 84.69" stroke-width="1.2"/>
+                <path d="M0 58A58 58 0 0 0 58 0" stroke-width="2"/>
+                <path d="M0 30A30 30 0 0 0 30 0" stroke-width="1.2"/>
+            </g>
+            <circle cx="0" cy="0" r="12" fill="currentColor"/>
+        </symbol>
+
+        <!-- Divisor com fases da lua (rodapé das páginas do catálogo) -->
+        <symbol id="moon-divider" viewBox="0 0 320 24">
+            <path d="M0 12H86" stroke="url(#fade-l)" stroke-width="2" stroke-linecap="round"/>
+            <path d="M234 12H320" stroke="url(#fade-r)" stroke-width="2" stroke-linecap="round"/>
+            <g fill="#c5a559">
+                <circle cx="94" cy="12" r="2.2"/>
+                <path d="M104 4A8 8 0 0 1 104 20A5 8 0 0 0 104 4Z"/>
+                <circle cx="120" cy="12" r="2.2"/>
+                <path d="M128 4A8 8 0 0 1 128 20A2 8 0 0 0 128 4Z"/>
+                <circle cx="143" cy="12" r="2.2"/>
+                <circle cx="177" cy="12" r="2.2"/>
+                <path d="M192 4A8 8 0 0 0 192 20A2 8 0 0 1 192 4Z"/>
+                <circle cx="200" cy="12" r="2.2"/>
+                <path d="M216 4A8 8 0 0 0 216 20A5 8 0 0 1 216 4Z"/>
+                <circle cx="226" cy="12" r="2.2"/>
+            </g>
+            <path d="M160 4L168 12L160 20L152 12Z" fill="none" stroke="#c5a559" stroke-width="1.6" stroke-linejoin="round"/>
+        </symbol>
+
+        <!-- Carta em contorno (capa do catálogo) -->
+        <symbol id="card-outline" viewBox="0 0 120 190">
+            <g fill="none" stroke="currentColor" stroke-linecap="round">
+                <rect x="2" y="2" width="116" height="186" rx="12" stroke-width="2.2"/>
+                <rect x="10" y="10" width="100" height="170" rx="7" stroke-width="1.2"/>
+                <circle cx="60" cy="95" r="10" stroke-width="1.4"/>
+                <path d="M75 95L93 95M74.49 98.88L91.88 103.54M72.99 102.5L88.58 111.5M70.61 105.61L83.33 118.33M67.5 107.99L76.5 123.58M63.88 109.49L68.54 126.88M60 110L60 128M56.12 109.49L51.46 126.88M52.5 107.99L43.5 123.58M49.39 105.61L36.67 118.33M47.01 102.5L31.42 111.5M45.51 98.88L28.12 103.54M45 95L27 95M45.51 91.12L28.12 86.46M47.01 87.5L31.42 78.5M49.39 84.39L36.67 71.67M52.5 82.01L43.5 66.42M56.12 80.51L51.46 63.12M60 80L60 62M63.88 80.51L68.54 63.12M67.5 82.01L76.5 66.42M70.61 84.39L83.33 71.67M72.99 87.5L88.58 78.5M74.49 91.12L91.88 86.46" stroke-width="1.1"/>
+            </g>
+            <path fill="currentColor" d="M60 89L61.3 93.7L66 95L61.3 96.3L60 101L58.7 96.3L54 95L58.7 93.7Z"/>
+            <path fill="currentColor" d="M30 30l1 3 3 1-3 1-1 3-1-3-3-1 3-1zM90 152l1 3 3 1-3 1-1 3-1-3-3-1 3-1zM88 36l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7zM32 150l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/>
+        </symbol>
+
+        <!-- Glifos dos arcanos usados nos diagramas de tiragem -->
+        <symbol id="g-sun" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M17.8 12L21.4 12M17.02 14.9L20.14 16.7M14.9 17.02L16.7 20.14M12 17.8L12 21.4M9.1 17.02L7.3 20.14M6.98 14.9L3.86 16.7M6.2 12L2.6 12M6.98 9.1L3.86 7.3M9.1 6.98L7.3 3.86M12 6.2L12 2.6M14.9 6.98L16.7 3.86M17.02 9.1L20.14 7.3"/></g></symbol>
+        <symbol id="g-moon" viewBox="0 0 24 24"><path fill="currentColor" d="M10.43 5.02A7.5 7.5 0 1 0 18.02 15.14A6.4 6.4 0 0 1 10.43 5.02Z"/></symbol>
+        <symbol id="g-star" viewBox="0 0 24 24"><path fill="currentColor" d="M12 3L12.61 10.52L15.96 8.04L13.48 11.39L21 12L13.48 12.61L15.96 15.96L12.61 13.48L12 21L11.39 13.48L8.04 15.96L10.52 12.61L3 12L10.52 11.39L8.04 8.04L11.39 10.52Z"/></symbol>
+        <symbol id="g-world" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="12" cy="12" r="3.6"/><ellipse cx="12" cy="12" rx="9.5" ry="4" transform="rotate(-20 12 12)"/><circle cx="12" cy="12" r="8.2" stroke-dasharray="1 2.2"/></g></symbol>
+        <symbol id="g-cup" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4.5h10c0 4.2-2.2 7.2-5 7.2s-5-3-5-7.2z"/><path d="M12 11.7v6.3M8.5 19.5h7"/><path d="M9.2 7.2h5.6" stroke-dasharray="1 1.6"/></g></symbol>
+        <symbol id="g-infinity" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.3" d="M12 12C10 9 4.5 9 4.5 12S10 15 12 12 19.5 9 19.5 12 14 15 12 12Z"/></symbol>
+        <symbol id="g-scales" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5v16M8.5 19.5h7M4.5 7h15"/><path d="M4.5 7L2.3 12.5h4.4zM19.5 7l-2.2 5.5h4.4z"/></g></symbol>
+
+        <!-- Ícones de interface -->
+        <symbol id="i-bag" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 8.5h13l-1.1 11.2a1.5 1.5 0 0 1-1.5 1.3H8.1a1.5 1.5 0 0 1-1.5-1.3z"/><path d="M9 8.5V7a3 3 0 0 1 6 0v1.5"/></g></symbol>
+        <symbol id="i-close" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/></symbol>
+        <symbol id="i-plus" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M12 5v14M5 12h14"/></symbol>
+        <symbol id="i-minus" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M5 12h14"/></symbol>
+        <symbol id="i-check" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+        <symbol id="i-trash" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 7h15M9.5 7V5h5v2M6.5 7l.9 12.1a1.5 1.5 0 0 0 1.5 1.4h6.2a1.5 1.5 0 0 0 1.5-1.4L17.5 7"/></g></symbol>
+        <symbol id="i-menu" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M4 7h16M4 12h16M4 17h11"/></symbol>
+        <symbol id="i-arrow" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 6l6 6-6 6"/></symbol>
+        <symbol id="i-whatsapp" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2a8.8 8.8 0 0 0-7.6 13.2L3.2 20.8l4.5-1.2A8.8 8.8 0 1 0 12 3.2z"/><path d="M9.1 7.9c-.4 0-.9.3-1 .9-.3 1.4.3 3 1.8 4.6 1.6 1.6 3.4 2.4 4.8 2.2.6-.1 1-.6 1-1.1l.1-.8-2-1-.9.9c-.9-.4-2-1.4-2.5-2.4l.8-.9-.9-2.1z"/></g></symbol>
+        <symbol id="i-instagram" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="3.8"/></g><circle cx="16.9" cy="7.1" r="1.1" fill="currentColor"/></symbol>
+        <symbol id="i-tiktok" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M13.5 3.5v11.2a3.4 3.4 0 1 1-3.4-3.4M13.5 3.5c.4 2.6 2.4 4.6 5 4.8"/></symbol>
+    </svg>
+
+    <header class="site-header" data-page>
+        <div class="container header-inner">
+            <a class="brand" href="#inicio" aria-label="Noctun Tarot, voltar ao início">
+                <svg class="brand-mark" aria-hidden="true"><use href="#mark"/></svg>
+                <span class="brand-name">Noctun</span>
+                <span class="brand-sub">Tarot</span>
+            </a>
+
+            <nav class="site-nav" id="menu-principal" aria-label="Principal">
+                <a href="#leituras">Leituras</a>
+                <a href="#metodos">Métodos</a>
+                <a href="#trabalho">Trabalho espiritual</a>
+                <a href="#sobre">Quem sou</a>
+                <a href="#como-funciona">Como funciona</a>
             </nav>
-            <button class="cart-btn" onclick="toggleCart()">
-                <span class="material-symbols-outlined">shopping_bag</span>
-                <span id="cart-badge" class="badge">0</span>
-            </button>
+
+            <div class="header-actions">
+                <button class="icon-btn cart-btn" type="button" data-cart-open aria-controls="carrinho" aria-haspopup="dialog" aria-label="Abrir seu pedido">
+                    <svg aria-hidden="true"><use href="#i-bag"/></svg>
+                    <span class="badge" data-cart-count hidden>0</span>
+                </button>
+                <button class="icon-btn menu-btn" type="button" aria-controls="menu-principal" aria-expanded="false" aria-label="Abrir menu">
+                    <svg aria-hidden="true"><use href="#i-menu"/></svg>
+                </button>
+            </div>
         </div>
     </header>
 
-    <aside id="cart-sidebar" class="cart-sidebar">
-        <div class="cart-header">
-            <h2>Seu Pedido</h2>
-            <button class="close-cart" onclick="toggleCart()">
-                <span class="material-symbols-outlined">close</span>
-            </button>
-        </div>
-        <div class="cart-items" id="cart-items">
-            <p class="empty-cart">Seu carrinho está vazio.</p>
-        </div>
-        <div class="cart-footer">
-            <div class="cart-total">
-                <span>Total:</span>
-                <span id="cart-total-value">R$ 0,00</span>
-            </div>
-            <button class="checkout-btn" onclick="finalizarCompra()">Finalizar no WhatsApp</button>
-        </div>
-    </aside>
-    <div id="cart-overlay" class="overlay" onclick="toggleCart()"></div>
+    <main id="conteudo" data-page>
 
-    <main>
-        <section id="inicio" class="hero">
-            <div class="hero-content">
-                <h1>Conecte-se com a sabedoria do invisível</h1>
-                <p>Leituras de Tarot, direcionamento espiritual e feitiços de adoçamento com responsabilidade e clareza.</p>
-                <a href="#servicos" class="btn-primary">Conhecer Serviços</a>
-            </div>
-        </section>
+        <!-- ============ HERO ============ -->
+        <section class="hero" id="inicio">
+            <svg class="corner corner--tl" aria-hidden="true"><use href="#corner"/></svg>
+            <svg class="corner corner--tr" aria-hidden="true"><use href="#corner"/></svg>
 
-        <section id="servicos" class="section-container">
-            <div class="section-header">
-                <h2>Leituras & Consultas</h2>
-                <p>Clareza rápida e objetiva para suas questões.</p>
-            </div>
-            
-            <div class="grid" id="grid-consultas">
-                <div class="product-card">
-                    <div class="card-icon"><span class="material-symbols-outlined">help</span></div>
-                    <h3>Pergunta Objetiva</h3>
-                    <p>Ideal para dúvidas pontuais de sim ou não, ou direções rápidas.</p>
-                    <div class="price">R$ 15,00</div>
-                    <button class="btn-add" onclick="adicionarAoCarrinho('Pergunta Objetiva', 15)">Adicionar</button>
-                </div>
-                <div class="product-card">
-                    <div class="card-icon"><span class="material-symbols-outlined">search_insights</span></div>
-                    <h3>Pergunta Aprofundada</h3>
-                    <p>Análise detalhada de uma situação específica com conselhos.</p>
-                    <div class="price">R$ 25,00</div>
-                    <button class="btn-add" onclick="adicionarAoCarrinho('Pergunta Aprofundada', 25)">Adicionar</button>
-                </div>
-                <div class="product-card">
-                    <div class="card-icon"><span class="material-symbols-outlined">schedule</span></div>
-                    <h3>Consulta 30 Minutos</h3>
-                    <p>Tempo livre para abordar diversos temas que você precisar.</p>
-                    <div class="price">R$ 50,00</div>
-                    <button class="btn-add" onclick="adicionarAoCarrinho('Consulta 30 Min', 50)">Adicionar</button>
-                </div>
-                <div class="product-card">
-                    <div class="card-icon"><span class="material-symbols-outlined">hourglass_empty</span></div>
-                    <h3>Consulta 1 Hora</h3>
-                    <p>Sessão completa para um mergulho profundo no seu momento atual.</p>
-                    <div class="price">R$ 100,00</div>
-                    <button class="btn-add" onclick="adicionarAoCarrinho('Consulta 1 Hora', 100)">Adicionar</button>
-                </div>
-            </div>
-        </section>
-
-        <section id="metodos" class="section-container bg-darker">
-            <div class="section-header">
-                <h2>Tiragens Especiais & Trabalhos</h2>
-                <p>Métodos profundos para relações e energia pessoal.</p>
-            </div>
-
-            <div class="grid grid-large">
-                <div class="product-card premium-card">
-                    <div class="card-badge">Amor & Relações</div>
-                    <h3>Templo de Afrodite</h3>
-                    <p>Compreenda sentimentos, desejos, bloqueios emocionais e dinâmicas do seu relacionamento. Uma leitura focada na sua vida afetiva.</p>
-                    <div class="price">R$ 40,00</div>
-                    <button class="btn-add" onclick="adicionarAoCarrinho('Templo de Afrodite', 40)">Adicionar</button>
-                </div>
-
-                <div class="product-card shadow-card">
-                    <div class="card-badge dark-badge">Sombras & Oculto</div>
-                    <h3>Templo do Diabo</h3>
-                    <p>Investiga apego, manipulação, mentiras e padrões tóxicos. Descubra a sombra por trás das aparências com extrema objetividade.</p>
-                    <div class="price">R$ 40,00</div>
-                    <button class="btn-add" onclick="adicionarAoCarrinho('Templo do Diabo', 40)">Adicionar</button>
-                </div>
-
-                <div class="product-card gold-card">
-                    <div class="card-badge gold-badge">Trabalho Espiritual</div>
-                    <h3>Feitiço de Auto-adoçamento</h3>
-                    <p>Fortaleça seu amor-próprio, autoestima e magnetismo. Adoce sua própria energia para atrair situações harmoniosas para a sua vida.</p>
-                    <div class="price">R$ 70,00</div>
-                    <button class="btn-add" onclick="adicionarAoCarrinho('Trabalho: Auto-adoçamento', 70)">Adicionar</button>
-                </div>
-            </div>
-        </section>
-
-        <section id="sobre" class="section-container">
-            <div class="about-grid">
-                <div class="about-text">
-                    <h2>Sobre Guilherme</h2>
-                    <p>Tenho 21 anos e atuo com o Tarot dedicando-me ao estudo contínuo, à prática responsável e ao aprimoramento constante da interpretação das cartas.</p>
-                    <p>Meu trabalho une sensibilidade, intuição e análise simbólica. Acredito no Tarot como uma poderosa ferramenta de reflexão e orientação, sempre respeitando o livre-arbítrio, o momento e a individualidade de cada consulente.</p>
-                    <ul class="regras-list">
-                        <li><span class="material-symbols-outlined">verified</span> Prazos de entrega: até 3 dias corridos.</li>
-                        <li><span class="material-symbols-outlined">electric_bolt</span> Taxa de Urgência (Furar Fila): + R$ 50,00</li>
-                        <li><span class="material-symbols-outlined">block</span> Não realizamos estornos após o agendamento.</li>
+            <div class="container hero-grid">
+                <div class="hero-copy">
+                    <p class="kicker hero-kicker" data-reveal><span>Leituras de Tarot</span><span class="sep"> &middot; </span><span>Trabalho espiritual</span></p>
+                    <h1 data-reveal>Conecte-se com a <em>sabedoria</em> do invisível</h1>
+                    <span class="rule" aria-hidden="true" data-reveal></span>
+                    <p class="lead" data-reveal>Leituras claras e direcionadas ao autoconhecimento, feitas com estudo contínuo, intuição e prática responsável.</p>
+                    <div class="hero-actions" data-reveal>
+                        <a class="btn btn-gold" href="#leituras">Ver leituras e valores</a>
+                        <a class="btn btn-ghost" href="https://wa.me/5524999894376?text=Ol%C3%A1%2C%20Guilherme!%20Vim%20pelo%20site%20da%20Noctun%20Tarot%20e%20gostaria%20de%20tirar%20uma%20d%C3%BAvida." target="_blank" rel="noopener">
+                            <svg aria-hidden="true"><use href="#i-whatsapp"/></svg>
+                            Tirar uma dúvida
+                        </a>
+                    </div>
+                    <ul class="hero-facts" data-reveal>
+                        <li><strong>Até 3 dias</strong><span>para receber sua leitura</span></li>
+                        <li><strong>PIX ou cartão</strong><span>com link de pagamento</span></li>
+                        <li><strong>Pedido rápido</strong><span>direto pelo WhatsApp</span></li>
                     </ul>
+                </div>
+
+                <div class="hero-art" data-reveal>
+                    <svg class="hero-card hero-card--back" aria-hidden="true"><use href="#card-outline"/></svg>
+                    <svg class="hero-card hero-card--front" aria-hidden="true"><use href="#card-outline"/></svg>
+                    <div class="arch">
+                        <img src="assets/logo-noctun.webp" width="468" height="539" fetchpriority="high"
+                             alt="Emblema da Noctun Tarot: lua crescente, estrela e um olho entre folhas">
+                    </div>
+                    <svg class="twinkle twinkle--1" aria-hidden="true"><use href="#twinkle"/></svg>
+                    <svg class="twinkle twinkle--2" aria-hidden="true"><use href="#twinkle"/></svg>
+                    <svg class="twinkle twinkle--3" aria-hidden="true"><use href="#twinkle"/></svg>
+                </div>
+            </div>
+
+            <svg class="moon-divider" aria-hidden="true"><use href="#moon-divider"/></svg>
+        </section>
+
+        <!-- ============ LEITURAS E CONSULTAS ============ -->
+        <section class="section" id="leituras" aria-labelledby="leituras-title">
+            <div class="container">
+                <header class="section-head" data-reveal>
+                    <h2 class="display" id="leituras-title">Leituras</h2>
+                    <span class="rule" aria-hidden="true"></span>
+                    <p class="kicker">Avulsas &amp; consultas</p>
+                    <p class="section-intro">Escolha o formato que combina com a sua pergunta. Tudo vai para o seu pedido, que você envia pelo WhatsApp.</p>
+                </header>
+
+                <div class="menu-grid">
+                    <article class="menu-group" data-reveal>
+                        <header class="menu-head">
+                            <svg class="menu-icon" aria-hidden="true"><use href="#twinkle"/></svg>
+                            <div>
+                                <h3>Leituras avulsas</h3>
+                                <p>Para questões pontuais e situações que pedem clareza rápida e objetiva.</p>
+                            </div>
+                        </header>
+                        <ul class="price-list">
+                            <li class="price-row">
+                                <div class="price-info">
+                                    <h4>Pergunta objetiva</h4>
+                                    <p>Uma questão pontual, com resposta direta.</p>
+                                </div>
+                                <p class="price-tag"><small>R$</small>15<small class="per">cada</small></p>
+                                <button class="add-btn" type="button" data-add data-id="pergunta-objetiva" data-name="Pergunta objetiva" data-price="15">
+                                    <svg aria-hidden="true"><use href="#i-plus"/></svg><span>Adicionar</span>
+                                </button>
+                            </li>
+                            <li class="price-row">
+                                <div class="price-info">
+                                    <h4>Pergunta aprofundada</h4>
+                                    <p>Análise detalhada de uma situação específica, com conselhos.</p>
+                                </div>
+                                <p class="price-tag"><small>R$</small>25<small class="per">cada</small></p>
+                                <button class="add-btn" type="button" data-add data-id="pergunta-aprofundada" data-name="Pergunta aprofundada" data-price="25">
+                                    <svg aria-hidden="true"><use href="#i-plus"/></svg><span>Adicionar</span>
+                                </button>
+                            </li>
+                        </ul>
+                    </article>
+
+                    <article class="menu-group" data-reveal>
+                        <header class="menu-head">
+                            <svg class="menu-icon" aria-hidden="true"><use href="#mark"/></svg>
+                            <div>
+                                <h3>Consultas</h3>
+                                <p>Tempo dedicado para abordar vários temas e olhar o seu momento com profundidade.</p>
+                            </div>
+                        </header>
+                        <ul class="price-list">
+                            <li class="price-row">
+                                <div class="price-info">
+                                    <h4>Leitura de 30 min</h4>
+                                    <p>Tempo livre para abordar os temas que você precisar.</p>
+                                </div>
+                                <p class="price-tag"><small>R$</small>50</p>
+                                <button class="add-btn" type="button" data-add data-id="leitura-30min" data-name="Leitura de 30 min" data-price="50">
+                                    <svg aria-hidden="true"><use href="#i-plus"/></svg><span>Adicionar</span>
+                                </button>
+                            </li>
+                            <li class="price-row">
+                                <div class="price-info">
+                                    <h4>Leitura de 1 hora</h4>
+                                    <p>Sessão completa para um mergulho no seu momento atual.</p>
+                                </div>
+                                <p class="price-tag"><small>R$</small>100</p>
+                                <button class="add-btn" type="button" data-add data-id="leitura-1h" data-name="Leitura de 1 hora" data-price="100">
+                                    <svg aria-hidden="true"><use href="#i-plus"/></svg><span>Adicionar</span>
+                                </button>
+                            </li>
+                            <li class="price-row">
+                                <div class="price-info">
+                                    <h4>Leitura de 2 horas</h4>
+                                    <p>A consulta mais completa, para vários temas com calma.</p>
+                                </div>
+                                <p class="price-tag"><small>R$</small>150</p>
+                                <button class="add-btn" type="button" data-add data-id="leitura-2h" data-name="Leitura de 2 horas" data-price="150">
+                                    <svg aria-hidden="true"><use href="#i-plus"/></svg><span>Adicionar</span>
+                                </button>
+                            </li>
+                        </ul>
+                    </article>
+                </div>
+
+                <p class="menu-note" data-reveal>
+                    <svg aria-hidden="true"><use href="#twinkle"/></svg>
+                    Com pressa? No seu pedido, marque <strong>Furar fila (+ R$ 50)</strong> e seja atendido na hora.
+                </p>
+            </div>
+        </section>
+
+        <!-- ============ MÉTODOS DE TIRAGEM ============ -->
+        <section class="section section--tint" id="metodos" aria-labelledby="metodos-title">
+            <svg class="corner corner--tl corner--soft" aria-hidden="true"><use href="#corner"/></svg>
+            <svg class="corner corner--br corner--soft" aria-hidden="true"><use href="#corner"/></svg>
+
+            <div class="container">
+                <header class="section-head" data-reveal>
+                    <h2 class="display" id="metodos-title">Métodos</h2>
+                    <span class="rule" aria-hidden="true"></span>
+                    <p class="kicker">De tiragem</p>
+                    <p class="section-intro">Tiragens próprias, desenhadas para ir fundo em temas específicos.</p>
+                </header>
+
+                <article class="spread" aria-labelledby="afrodite-title">
+                    <div class="board board--afrodite" data-reveal role="img"
+                         aria-label="Disposição do Templo de Afrodite: sete cartas. À esquerda e à direita, de cima para baixo: pensamentos, sentimentos e intenções. No centro: futuro.">
+                        <div class="slot slot--l1"><span class="slot-label">Pensamentos</span><span class="tcard"><span class="tcard-num">XIV</span><svg><use href="#g-cup"/></svg></span></div>
+                        <div class="slot slot--r1"><span class="slot-label">Pensamentos</span><span class="tcard"><span class="tcard-num">VIII</span><svg><use href="#g-infinity"/></svg></span></div>
+                        <div class="slot slot--l2"><span class="slot-label">Sentimentos</span><span class="tcard"><span class="tcard-num">XVIII</span><svg><use href="#g-moon"/></svg></span></div>
+                        <div class="slot slot--c2"><span class="slot-label">Futuro</span><span class="tcard tcard--key"><span class="tcard-num">XIX</span><svg><use href="#g-sun"/></svg></span></div>
+                        <div class="slot slot--r2"><span class="slot-label">Sentimentos</span><span class="tcard"><span class="tcard-num">XI</span><svg><use href="#g-scales"/></svg></span></div>
+                        <div class="slot slot--l3"><span class="slot-label">Intenções</span><span class="tcard"><span class="tcard-num">XVII</span><svg><use href="#g-star"/></svg></span></div>
+                        <div class="slot slot--r3"><span class="slot-label">Intenções</span><span class="tcard"><span class="tcard-num">XXI</span><svg><use href="#g-world"/></svg></span></div>
+                    </div>
+
+                    <div class="spread-copy" data-reveal>
+                        <p class="tag">Amor &amp; conexões afetivas</p>
+                        <h3 id="afrodite-title">Templo de Afrodite</h3>
+                        <p>Leitura voltada para questões amorosas, autoestima e conexões afetivas. O método busca compreender sentimentos, desejos, bloqueios emocionais e dinâmicas de relacionamento, oferecendo clareza e direcionamento sobre a vida amorosa e a energia afetiva do consulente.</p>
+                        <ul class="chips" aria-label="Posições da tiragem">
+                            <li>Pensamentos</li><li>Sentimentos</li><li>Intenções</li><li>Futuro</li>
+                        </ul>
+                        <div class="buy-row">
+                            <p class="price-tag price-tag--lg"><small>R$</small>40</p>
+                            <button class="btn btn-gold" type="button" data-add data-id="templo-afrodite" data-name="Templo de Afrodite" data-price="40">
+                                <svg aria-hidden="true"><use href="#i-plus"/></svg><span>Adicionar ao pedido</span>
+                            </button>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="spread spread--reverse" aria-labelledby="diabo-title">
+                    <div class="board board--diabo" data-reveal role="img"
+                         aria-label="Disposição do Templo do Diabo: seis cartas em pirâmide, uma no topo, duas no meio e três na base, numeradas de 1 a 6.">
+                        <div class="slot slot--p1"><span class="slot-label">1</span><span class="tcard tcard--shadow"><span class="tcard-num">XIV</span><svg><use href="#g-cup"/></svg></span></div>
+                        <div class="slot slot--p2"><span class="slot-label">2</span><span class="tcard tcard--shadow"><span class="tcard-num">XIX</span><svg><use href="#g-sun"/></svg></span></div>
+                        <div class="slot slot--p3"><span class="slot-label">3</span><span class="tcard tcard--shadow"><span class="tcard-num">XI</span><svg><use href="#g-scales"/></svg></span></div>
+                        <div class="slot slot--p4"><span class="slot-label">4</span><span class="tcard tcard--shadow"><span class="tcard-num">XVII</span><svg><use href="#g-star"/></svg></span></div>
+                        <div class="slot slot--p5"><span class="slot-label">5</span><span class="tcard tcard--shadow"><span class="tcard-num">VIII</span><svg><use href="#g-infinity"/></svg></span></div>
+                        <div class="slot slot--p6"><span class="slot-label">6</span><span class="tcard tcard--shadow"><span class="tcard-num">XXI</span><svg><use href="#g-world"/></svg></span></div>
+                    </div>
+
+                    <div class="spread-copy" data-reveal>
+                        <p class="tag tag--dark">Sombras &amp; dinâmicas ocultas</p>
+                        <h3 id="diabo-title">Templo do Diabo</h3>
+                        <p>Tiragem profunda voltada para relações intensas e dinâmicas ocultas. Investiga apego, manipulação, mentiras, desejos e padrões que podem estar prendendo o consulente em situações confusas ou tóxicas. Inspirada no arcano O Diabo, revela a sombra por trás das aparências com clareza e objetividade.</p>
+                        <ol class="questions">
+                            <li>Ele já me traiu?</li>
+                            <li>Teve intenção e pensamento de trair?</li>
+                            <li>Já falou mal pelas costas?</li>
+                            <li>Já teve pensamento de término?</li>
+                            <li>Tem outra pessoa na vida dele?</li>
+                            <li>Ele sente algo além de desejo sexual?</li>
+                        </ol>
+                        <div class="buy-row">
+                            <p class="price-tag price-tag--lg"><small>R$</small>40</p>
+                            <button class="btn btn-gold" type="button" data-add data-id="templo-diabo" data-name="Templo do Diabo" data-price="40">
+                                <svg aria-hidden="true"><use href="#i-plus"/></svg><span>Adicionar ao pedido</span>
+                            </button>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <!-- ============ TRABALHO ESPIRITUAL ============ -->
+        <section class="section" id="trabalho" aria-labelledby="trabalho-title">
+            <div class="container">
+                <header class="section-head" data-reveal>
+                    <h2 class="display" id="trabalho-title">Trabalho</h2>
+                    <span class="rule" aria-hidden="true"></span>
+                    <p class="kicker">Espiritual</p>
+                </header>
+
+                <div class="ritual">
+                    <figure class="ritual-photo" data-reveal>
+                        <img src="assets/ritual-auto-adocamento.webp" width="768" height="1024" loading="lazy" decoding="async"
+                             alt="Altar do auto-adoçamento: maçã sobre pétalas de rosa vermelha, vela vermelha acesa, incensos e cartas de Tarot">
+                    </figure>
+
+                    <div class="ritual-copy" data-reveal>
+                        <p class="tag">Amor-próprio &amp; magnetismo</p>
+                        <h3>Auto-adoçamento</h3>
+                        <p>O feitiço de auto-adoçamento é um trabalho espiritual voltado para fortalecer o amor-próprio, a autoestima, a autoconfiança e a forma como você enxerga a si mesmo.</p>
+                        <p>Seu objetivo é adoçar a própria energia, auxiliando na valorização pessoal, no magnetismo, no autocuidado e na atração de situações mais harmoniosas para a sua vida.</p>
+                        <ul class="benefits">
+                            <li><svg aria-hidden="true"><use href="#twinkle"/></svg>Mais segurança e autoconfiança</li>
+                            <li><svg aria-hidden="true"><use href="#twinkle"/></svg>Amor-próprio e autoestima fortalecidos</li>
+                            <li><svg aria-hidden="true"><use href="#twinkle"/></svg>Uma relação mais positiva consigo mesmo</li>
+                        </ul>
+                        <div class="buy-row">
+                            <p class="price-tag price-tag--lg"><small>R$</small>70</p>
+                            <button class="btn btn-gold" type="button" data-add data-id="auto-adocamento" data-name="Trabalho: Auto-adoçamento" data-price="70">
+                                <svg aria-hidden="true"><use href="#i-plus"/></svg><span>Adicionar ao pedido</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ QUEM SOU ============ -->
+        <section class="section section--tint" id="sobre" aria-labelledby="sobre-title">
+            <div class="container">
+                <header class="section-head" data-reveal>
+                    <h2 class="display" id="sobre-title">Quem sou</h2>
+                    <span class="rule" aria-hidden="true"></span>
+                    <p class="kicker">Como eu trabalho</p>
+                </header>
+
+                <div class="about">
+                    <blockquote class="about-quote" data-reveal>
+                        <svg class="about-mark" aria-hidden="true"><use href="#mark"/></svg>
+                        <p>Acredito no Tarot como ferramenta de reflexão e orientação, respeitando o momento e a individualidade de cada consulente.</p>
+                        <footer>Guilherme &middot; Noctun Tarot</footer>
+                    </blockquote>
+
+                    <div class="about-text" data-reveal>
+                        <p>Me chamo <strong>Guilherme</strong>, tenho 21 anos e atuo com o Tarot me dedicando ao estudo contínuo, à prática responsável e ao aprimoramento da interpretação das cartas.</p>
+                        <p>Meu trabalho une sensibilidade, intuição e análise simbólica, oferecendo leituras claras e direcionadas ao autoconhecimento. Aqui você encontra meus métodos de leitura, desenvolvidos para atender diferentes necessidades e profundidades de consulta.</p>
+                        <ul class="values" aria-label="Pilares do atendimento">
+                            <li><span>Sensibilidade</span></li>
+                            <li><span>Intuição</span></li>
+                            <li><span>Análise simbólica</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ COMO FUNCIONA ============ -->
+        <section class="section" id="como-funciona" aria-labelledby="como-title">
+            <div class="container">
+                <header class="section-head" data-reveal>
+                    <h2 class="display" id="como-title">Funcionamento</h2>
+                    <span class="rule" aria-hidden="true"></span>
+                    <p class="kicker">Dos atendimentos</p>
+                </header>
+
+                <ol class="steps">
+                    <li class="step" data-reveal>
+                        <span class="step-num" aria-hidden="true">I</span>
+                        <h3>Escolha sua tiragem</h3>
+                        <p>Monte seu pedido aqui no site com as leituras que quiser e finalize pelo WhatsApp.</p>
+                    </li>
+                    <li class="step" data-reveal>
+                        <span class="step-num" aria-hidden="true">II</span>
+                        <h3>Envie suas informações</h3>
+                        <ul class="info-list">
+                            <li>Nome completo</li>
+                            <li>Data de nascimento</li>
+                            <li>Tiragem escolhida</li>
+                            <li>Contexto da história que vai abordar</li>
+                        </ul>
+                    </li>
+                    <li class="step" data-reveal>
+                        <span class="step-num" aria-hidden="true">III</span>
+                        <h3>Faça o pagamento</h3>
+                        <p>Aceito <strong>PIX ou cartão de crédito</strong> (envio o link). Após o comprovante, sua tiragem entra na fila de atendimentos.</p>
+                    </li>
+                    <li class="step" data-reveal>
+                        <span class="step-num" aria-hidden="true">IV</span>
+                        <h3>Receba sua leitura</h3>
+                        <p>O prazo é de <strong>até 3 dias corridos</strong>, podendo ser entregue antes, conforme a demanda do momento.</p>
+                    </li>
+                </ol>
+
+                <div class="notes" data-reveal>
+                    <div class="note">
+                        <h3>Furar fila &middot; R$ 50</h3>
+                        <p>Quer resposta logo? Com essa opção você é atendido imediatamente. É só marcar no seu pedido.</p>
+                    </div>
+                    <div class="note note--warn">
+                        <h3>Sobre desistências</h3>
+                        <p>Em caso de desistência <strong>não é realizado estorno</strong>. Por isso, tenha certeza ao procurar e fechar a sua consulta.</p>
+                    </div>
                 </div>
             </div>
         </section>
     </main>
 
-    <footer>
-        <div class="footer-content">
-            <div class="logo">Noctun Tarot</div>
-            <p>Conecte-se nas redes sociais</p>
-            <div class="social-links">
-                <a href="#">Instagram: @Noctun_Tarot</a>
-                <a href="#">TikTok: @Noctun_Tarot</a>
+    <!-- ============ RODAPÉ ============ -->
+    <footer class="site-footer" data-page>
+        <svg class="corner corner--tl corner--footer" aria-hidden="true"><use href="#corner"/></svg>
+        <svg class="corner corner--tr corner--footer" aria-hidden="true"><use href="#corner"/></svg>
+
+        <div class="container footer-inner">
+            <svg class="footer-mark" aria-hidden="true"><use href="#mark"/></svg>
+            <h2 class="footer-title">Vamos consultar as cartas?</h2>
+            <p class="footer-lead">Escolha sua leitura, monte o pedido e fale comigo pelo WhatsApp.</p>
+            <div class="footer-actions">
+                <a class="btn btn-gold" href="#leituras">Montar meu pedido</a>
+                <a class="btn btn-ghost btn-ghost--light" href="https://wa.me/5524999894376" target="_blank" rel="noopener">
+                    <svg aria-hidden="true"><use href="#i-whatsapp"/></svg>(24) 99989-4376
+                </a>
             </div>
-            <p class="copyright">&copy; 2026 Noctun Tarot. Todos os direitos reservados.</p>
+
+            <ul class="social" aria-label="Redes sociais">
+                <li><a href="https://www.instagram.com/noctun_tarot/" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#i-instagram"/></svg>@Noctun_Tarot <span class="sr-only">no Instagram</span></a></li>
+                <li><a href="https://www.tiktok.com/@noctun_tarot" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#i-tiktok"/></svg>@Noctun_Tarot <span class="sr-only">no TikTok</span></a></li>
+            </ul>
+
+            <svg class="moon-divider moon-divider--footer" aria-hidden="true"><use href="#moon-divider"/></svg>
+            <p class="copyright">&copy; <span data-year>2026</span> Noctun Tarot. Todos os direitos reservados.</p>
         </div>
     </footer>
 
-    <div id="toast-container"></div>
+    <!-- Barra flutuante do pedido (mobile) -->
+    <button class="cart-fab" type="button" data-cart-open data-page aria-controls="carrinho" aria-haspopup="dialog" hidden>
+        <span class="cart-fab-count"><span data-cart-count>0</span> <span data-cart-count-label>itens</span></span>
+        <strong data-cart-total>R$ 0,00</strong>
+        <span class="cart-fab-cta">Ver pedido <svg aria-hidden="true"><use href="#i-arrow"/></svg></span>
+    </button>
+
+    <!-- ============ CARRINHO ============ -->
+    <div class="drawer-backdrop" data-cart-close></div>
+    <aside class="drawer" id="carrinho" role="dialog" aria-modal="true" aria-labelledby="carrinho-title" inert>
+        <header class="drawer-head">
+            <div>
+                <p class="kicker">Noctun Tarot</p>
+                <h2 id="carrinho-title">Seu pedido</h2>
+            </div>
+            <button class="icon-btn" type="button" data-cart-close aria-label="Fechar pedido">
+                <svg aria-hidden="true"><use href="#i-close"/></svg>
+            </button>
+        </header>
+
+        <div class="drawer-body">
+            <ul class="cart-list" data-cart-list></ul>
+
+            <div class="cart-empty" data-cart-empty>
+                <svg class="cart-empty-art" aria-hidden="true"><use href="#card-outline"/></svg>
+                <p class="cart-empty-title">Seu pedido está vazio</p>
+                <p>Escolha uma leitura para começar.</p>
+                <a class="btn btn-ghost" href="#leituras" data-cart-close>Ver leituras</a>
+            </div>
+        </div>
+
+        <footer class="drawer-foot" data-cart-foot hidden>
+            <label class="rush">
+                <input type="checkbox" data-rush>
+                <span class="rush-box" aria-hidden="true"><svg><use href="#i-check"/></svg></span>
+                <span class="rush-text">Furar fila <small>Atendimento imediato</small></span>
+                <span class="rush-price">+ R$ 50</span>
+            </label>
+            <div class="cart-total">
+                <span>Total</span>
+                <strong data-cart-total>R$ 0,00</strong>
+            </div>
+            <button class="btn btn-forest btn-block" type="button" data-checkout>
+                <svg aria-hidden="true"><use href="#i-whatsapp"/></svg>
+                Finalizar no WhatsApp
+            </button>
+            <p class="drawer-note">Abriremos o WhatsApp com o pedido pronto. Lá você completa seus dados e combina o pagamento (PIX ou cartão).</p>
+        </footer>
+    </aside>
+
+    <div class="toast-region" aria-live="polite" aria-atomic="true" data-toasts></div>
 
     <script src="script.js"></script>
 </body>
