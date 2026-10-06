@@ -10,6 +10,7 @@
     const WHATSAPP_NUMBER = '5524999894376';
     const RUSH = { name: 'Furar fila (atendimento imediato)', price: 50 };
     const STORAGE_KEY = 'noctun:pedido:v1';
+    const BIRTH_KEY = 'noctun:nascimento'; // data informada em "Seu arcano" (só neste aparelho)
     const MAX_QTY = 20;
 
     const brl = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -453,7 +454,7 @@
 
         // Pede só os dados que fazem sentido para o que foi pedido
         lines.push('', '*Meus dados:*', 'Nome completo: ');
-        if (services.length) lines.push('Data de nascimento: ', 'Contexto da história: ');
+        if (services.length) lines.push(`Data de nascimento: ${savedBirth()}`, 'Contexto da história: ');
         if (products.length) lines.push('Cidade/bairro (para combinarmos a entrega): ');
         return lines.join('\n');
     }
@@ -958,12 +959,7 @@
     // Botões de compra espalhados pelo site (painéis, quiz, carta do dia):
     // nome e preço vêm do catálogo, nunca repetidos no HTML.
     const shortPrice = (value) => (Number.isInteger(value) ? `R$ ${value}` : formatBRL(value));
-    document.querySelectorAll('[data-cta]').forEach((btn) => {
-        const product = catalog.get(btn.dataset.id);
-        if (!product) return;
-        btn.querySelector('span').textContent = `${btn.dataset.cta} · ${shortPrice(product.price)}`;
-        btn.setAttribute('aria-label', `${btn.dataset.cta}: adicionar ${product.name} ao pedido por ${formatBRL(product.price)}`);
-    });
+    document.querySelectorAll('[data-cta]').forEach((btn) => labelCta(btn));
 
 
     // =====================================================
@@ -1507,6 +1503,207 @@
                     spawn(event.clientX, event.clientY, Math.cos(angle) * dist, Math.sin(angle) * dist, 0.6 + Math.random() * 0.5, 650);
                 }
             });
+        }
+    }
+
+    // =====================================================
+    // 18. Compartilhar (menu nativo do celular ou WhatsApp)
+    // =====================================================
+    async function shareText(text) {
+        const url = `${location.origin}${location.pathname}`;
+        if (navigator.share) {
+            try {
+                await navigator.share({ title: 'Noctun Tarot', text, url });
+            } catch {
+                // a pessoa cancelou o compartilhamento
+            }
+            return;
+        }
+        window.open(`https://wa.me/?text=${encodeURIComponent(`${text} ${url}`)}`, '_blank', 'noopener');
+    }
+
+    const oracleShare = document.querySelector('[data-share="oracle"]');
+    if (oracleShare) {
+        oracleShare.addEventListener('click', () => {
+            const arcanum = dailyArcanum();
+            shareText(`Minha carta do dia na Noctun Tarot é ${arcanum.name} (${arcanum.keys.join(', ')}) ✨ Tire a sua:`);
+        });
+    }
+
+    // =====================================================
+    // 19. Seu arcano: data de nascimento → arcano de nascimento + carta do signo
+    // =====================================================
+    // Carta regente de cada signo (correspondência tradicional da Golden Dawn)
+    const SIGNS = [
+        { name: 'Capricórnio', from: 1222, arcanum: 15 },
+        { name: 'Aquário', from: 120, arcanum: 17 },
+        { name: 'Peixes', from: 219, arcanum: 18 },
+        { name: 'Áries', from: 321, arcanum: 4 },
+        { name: 'Touro', from: 420, arcanum: 5 },
+        { name: 'Gêmeos', from: 521, arcanum: 6 },
+        { name: 'Câncer', from: 621, arcanum: 7 },
+        { name: 'Leão', from: 723, arcanum: 8 },
+        { name: 'Virgem', from: 823, arcanum: 9 },
+        { name: 'Libra', from: 923, arcanum: 11 },
+        { name: 'Escorpião', from: 1023, arcanum: 13 },
+        { name: 'Sagitário', from: 1122, arcanum: 14 },
+    ];
+
+    function signOf(day, month) {
+        const value = month * 100 + day;
+        if (value >= 1222 || value < 120) return SIGNS[0];
+        return SIGNS.slice(1).filter((sign) => value >= sign.from).pop();
+    }
+
+    // Arcano de nascimento: soma dia + mês + ano e reduz os dígitos até chegar a 22 ou menos (22 = O Louco)
+    function birthArcanum(day, month, year) {
+        let n = day + month + year;
+        while (n > 22) n = String(n).split('').reduce((sum, digit) => sum + Number(digit), 0);
+        return n === 22 ? 0 : n;
+    }
+
+    function parseBirth(value) {
+        const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(value || '');
+        if (!match) return null;
+        const [day, month, year] = match.slice(1).map(Number);
+        const date = new Date(year, month - 1, day);
+        if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) return null;
+        if (year < 1900 || date > new Date()) return null;
+        return { day, month, year };
+    }
+
+    function savedBirth() {
+        try {
+            const value = localStorage.getItem(BIRTH_KEY);
+            return parseBirth(value) ? value : '';
+        } catch {
+            return '';
+        }
+    }
+
+    function labelCta(btn) {
+        const product = catalog.get(btn.dataset.id);
+        if (!product) return;
+        btn.querySelector('span').textContent = `${btn.dataset.cta} · ${shortPrice(product.price)}`;
+        btn.setAttribute('aria-label', `${btn.dataset.cta}: adicionar ${product.name} ao pedido por ${formatBRL(product.price)}`);
+    }
+
+    const arcanoForm = document.querySelector('[data-arcano-form]');
+    if (arcanoForm) {
+        const input = arcanoForm.querySelector('[data-arcano-input]');
+        const error = arcanoForm.querySelector('[data-arcano-error]');
+        const result = document.querySelector('[data-arcano-result]');
+
+        // Máscara dd/mm/aaaa enquanto digita
+        input.addEventListener('input', () => {
+            const digits = input.value.replace(/\D/g, '').slice(0, 8);
+            input.value = [digits.slice(0, 2), digits.slice(2, 4), digits.slice(4, 8)].filter(Boolean).join('/');
+            if (!error.hidden) {
+                error.hidden = true;
+                input.removeAttribute('aria-invalid');
+            }
+        });
+
+        function pickBlock(tag, arcanum) {
+            const block = make('div', 'arcano-pick');
+            const card = make('div', 'quiz-card');
+            const inner = make('div', 'quiz-card-inner');
+            const front = make('div', 'quiz-card-face quiz-card-front');
+            front.append(svgIcon(arcanum.glyph), make('span', 'quiz-card-name', arcanum.name));
+            const back = make('div', 'quiz-card-face quiz-card-back');
+            back.append(svgIcon('card-back'));
+            inner.append(front, back);
+            card.append(inner);
+            const body = make('div');
+            body.append(
+                make('p', 'arcano-tag', tag),
+                make('h3', 'arcano-name', arcanum.name),
+                make('p', 'arcano-keys', arcanum.keys.join(' · ')),
+                make('p', 'arcano-meaning', arcanum.meaning),
+            );
+            block.append(card, body);
+            return block;
+        }
+
+        function reveal(birth, interactive) {
+            const born = ARCANA[birthArcanum(birth.day, birth.month, birth.year)];
+            const sign = signOf(birth.day, birth.month);
+            const ruler = ARCANA[sign.arcanum];
+
+            const cards = make('div', 'arcano-cards');
+            if (born === ruler) {
+                cards.classList.add('arcano-cards--single');
+                cards.append(pickBlock(`Nascimento e signo de ${sign.name}`, born));
+            } else {
+                cards.append(pickBlock('Arcano de nascimento', born), pickBlock(`Carta do seu signo · ${sign.name}`, ruler));
+            }
+
+            const actions = make('div', 'arcano-actions');
+            const ask = make('button', 'btn btn-gold btn-shine');
+            ask.type = 'button';
+            ask.dataset.add = '';
+            ask.dataset.id = 'pergunta-objetiva';
+            ask.dataset.cta = 'Fazer uma pergunta';
+            ask.append(svgIcon('i-plus'), make('span'));
+            labelCta(ask);
+
+            const share = make('button', 'btn btn-ghost');
+            share.type = 'button';
+            share.append(svgIcon('i-share'), make('span', '', 'Compartilhar'));
+            share.addEventListener('click', () => shareText(
+                `Meu arcano de nascimento é ${born.name}${born === ruler ? '' : ` e a carta do meu signo (${sign.name}) é ${ruler.name}`} ✨ Descubra o seu na Noctun Tarot:`,
+            ));
+
+            const again = make('button', 'quiz-link');
+            again.type = 'button';
+            again.append(svgIcon('i-shuffle'), document.createTextNode('Outra data'));
+            again.addEventListener('click', () => {
+                result.replaceChildren();
+                input.value = '';
+                input.focus();
+            });
+
+            actions.append(ask, share, again);
+            result.replaceChildren(
+                cards,
+                actions,
+                make('p', 'arcano-note', 'Significados gerais das cartas. Na leitura, o Guilherme relaciona o seu arcano com a sua pergunta.'),
+            );
+
+            if (interactive) {
+                haptic(14);
+                setTimeout(() => cards.querySelectorAll('.quiz-card').forEach((card) => burst(card, { count: 9, distance: 55, className: 'spark spark--center' })), reduceMotion ? 0 : 1000);
+                if (result.getBoundingClientRect().bottom > window.innerHeight) {
+                    cards.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' });
+                }
+            }
+        }
+
+        arcanoForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const value = input.value.trim();
+            const birth = parseBirth(value);
+            if (!birth) {
+                error.textContent = 'Confira a data: use o formato dd/mm/aaaa (ex.: 23/07/1998).';
+                error.hidden = false;
+                input.setAttribute('aria-invalid', 'true');
+                input.focus();
+                haptic([18, 60, 18]);
+                return;
+            }
+            try {
+                localStorage.setItem(BIRTH_KEY, value);
+            } catch {
+                // sem armazenamento: o resultado aparece mesmo assim
+            }
+            reveal(birth, true);
+        });
+
+        // Quem já informou a data vê o resultado direto (sem roubar o foco)
+        const previous = savedBirth();
+        if (previous) {
+            input.value = previous;
+            reveal(parseBirth(previous), false);
         }
     }
 

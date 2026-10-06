@@ -3799,6 +3799,358 @@ button.arch:focus-visible {
     }
 }
 
+/* ---------- Seções noturnas (Seu arcano + topo à noite) ---------- */
+.section--night {
+    background:
+        radial-gradient(60% 50% at 50% 0%, rgba(197, 165, 89, 0.16), transparent 70%),
+        radial-gradient(50% 40% at 90% 100%, rgba(117, 133, 114, 0.18), transparent 70%),
+        linear-gradient(180deg, #1d2723 0%, var(--forest) 100%);
+    color: rgba(243, 240, 233, 0.82);
+}
+
+.section--night .display,
+.section--night h3 {
+    color: var(--cream);
+}
+
+.section--night .kicker {
+    color: var(--gold-soft);
+}
+
+.section--night .section-intro {
+    color: rgba(243, 240, 233, 0.82);
+}
+
+.section--night :focus-visible {
+    outline-color: var(--gold);
+}
+
+.section--night .starfield i,
+.is-night .hero .starfield i {
+    box-shadow: 0 0 8px 2px rgba(220, 198, 144, 0.75);
+    background: var(--gold-soft);
+}
+
+/* ---------- Seu arcano ---------- */
+.arcano {
+    max-width: 880px;
+    margin-inline: auto;
+}
+
+.arcano-form {
+    display: grid;
+    justify-items: center;
+    gap: 0.6rem;
+    text-align: center;
+}
+
+.arcano-label {
+    color: var(--gold-soft);
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+}
+
+.arcano-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.7rem;
+    width: 100%;
+}
+
+.arcano-input {
+    width: min(100%, 220px);
+    height: 52px;
+    padding: 0 1.1rem;
+    border: 1px solid rgba(197, 165, 89, 0.55);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--cream);
+    font: inherit;
+    font-size: 1.15rem;
+    letter-spacing: 0.08em;
+    text-align: center;
+    transition: border-color 0.25s var(--ease), box-shadow 0.25s var(--ease);
+}
+
+.arcano-input::placeholder {
+    color: rgba(243, 240, 233, 0.45);
+}
+
+.arcano-input:focus-visible {
+    outline: none;
+    border-color: var(--gold);
+    box-shadow: 0 0 0 4px rgba(197, 165, 89, 0.25);
+}
+
+.arcano-input[aria-invalid="true"] {
+    border-color: #e08a8a;
+}
+
+.arcano-help {
+    color: rgba(243, 240, 233, 0.62);
+    font-size: 0.82rem;
+}
+
+.arcano-error {
+    color: #f0b2b2;
+    font-size: 0.88rem;
+    font-weight: 500;
+}
+
+.arcano-result:not(:empty) {
+    margin-top: clamp(2rem, 5vw, 3rem);
+}
+
+.arcano-cards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(1.4rem, 4vw, 2.4rem);
+}
+
+.arcano-cards--single {
+    grid-template-columns: minmax(0, 520px);
+    justify-content: center;
+}
+
+.arcano-pick {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 1.2rem;
+    padding: 1.3rem;
+    border: 1px solid rgba(197, 165, 89, 0.3);
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.04);
+    animation: quiz-in 0.6s var(--ease) both;
+}
+
+.arcano-pick + .arcano-pick {
+    animation-delay: 0.2s;
+}
+
+.arcano-pick .quiz-card {
+    width: clamp(104px, 14vw, 128px);
+}
+
+.arcano-pick + .arcano-pick .quiz-card-inner {
+    animation-delay: 0.45s;
+}
+
+.arcano-tag {
+    color: var(--gold-soft);
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+}
+
+.arcano-name {
+    margin: 0.3rem 0 0.2rem;
+    color: var(--cream);
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(1.7rem, 1.4rem + 1vw, 2.1rem);
+    line-height: 1.05;
+}
+
+.arcano-keys {
+    color: var(--gold);
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+}
+
+.arcano-meaning {
+    margin-top: 0.5rem;
+    font-size: 0.93rem;
+    line-height: 1.55;
+}
+
+.arcano-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 0.7rem;
+    margin-top: 1.8rem;
+}
+
+.arcano-actions .btn-ghost {
+    color: var(--cream);
+    border-color: var(--line-strong);
+}
+
+.section--night .quiz-link {
+    color: var(--gold-soft);
+}
+
+@media (hover: hover) {
+    .section--night .quiz-link:hover {
+        color: var(--cream);
+    }
+}
+
+.arcano-note {
+    margin-top: 1rem;
+    color: rgba(243, 240, 233, 0.62);
+    font-size: 0.82rem;
+    text-align: center;
+}
+
+/* ---------- Compartilhar ---------- */
+.share-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: 40px;
+    padding: 0 0.6rem;
+    border-radius: 999px;
+    color: inherit;
+    font-size: inherit;
+    font-weight: 500;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: background-color 0.25s var(--ease);
+}
+
+.share-link svg {
+    width: 15px;
+    height: 15px;
+}
+
+@media (hover: hover) {
+    .share-link:hover {
+        background: rgba(197, 165, 89, 0.16);
+    }
+}
+
+/* ---------- "sabedoria" com um brilho dourado passando ---------- */
+.hero h1 em {
+    background: linear-gradient(100deg, var(--gold-ink) 0%, var(--gold-ink) 40%, #b8913f 50%, var(--gold-ink) 60%, var(--gold-ink) 100%) 0 0 / 250% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 7s 1.5s linear infinite;
+}
+
+@keyframes shimmer {
+    from { background-position: 100% 0; }
+    to { background-position: -150% 0; }
+}
+
+/* ---------- Topo noturno (das 18h às 6h) ---------- */
+.is-night .hero {
+    background:
+        radial-gradient(55% 55% at 76% 42%, rgba(197, 165, 89, 0.24), transparent 70%),
+        radial-gradient(70% 60% at 20% 0%, rgba(117, 133, 114, 0.28), transparent 70%),
+        linear-gradient(180deg, #18211e 0%, #24302a 70%, var(--forest) 100%);
+    color: rgba(243, 240, 233, 0.82);
+}
+
+.is-night .hero h1 {
+    color: var(--cream);
+}
+
+.is-night .hero h1 em {
+    background-image: linear-gradient(100deg, var(--gold) 0%, var(--gold) 40%, #f3dfa6 50%, var(--gold) 60%, var(--gold) 100%);
+}
+
+.is-night .hero .kicker {
+    color: var(--gold-soft);
+}
+
+.is-night .hero .lead {
+    color: rgba(243, 240, 233, 0.82);
+}
+
+.is-night .hero .btn-ghost {
+    color: var(--cream);
+    border-color: var(--line-strong);
+}
+
+.is-night .hero .hero-quiz-link {
+    color: var(--gold-soft);
+    border-bottom-color: rgba(197, 165, 89, 0.5);
+}
+
+.is-night .hero-facts {
+    border-top-color: rgba(197, 165, 89, 0.3);
+}
+
+.is-night .hero-facts li {
+    border-right-color: rgba(197, 165, 89, 0.3);
+}
+
+.is-night .hero-facts strong {
+    color: var(--cream);
+}
+
+.is-night .hero-facts span {
+    color: rgba(243, 240, 233, 0.7);
+}
+
+.is-night .moon-today {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(197, 165, 89, 0.35);
+    color: rgba(243, 240, 233, 0.8);
+}
+
+.is-night .moon-today strong {
+    color: var(--cream);
+}
+
+.is-night .moon-today .moon-dark {
+    fill: #121a17;
+    stroke: rgba(197, 165, 89, 0.4);
+    stroke-width: 0.8;
+}
+
+.is-night .arch {
+    box-shadow:
+        0 0 0 1px var(--line-strong),
+        0 0 0 9px #222c27,
+        0 0 0 10px rgba(197, 165, 89, 0.4),
+        0 0 70px -6px rgba(197, 165, 89, 0.5);
+}
+
+.is-night .arch-hint {
+    color: var(--gold-soft);
+}
+
+.is-night .hero-rays {
+    opacity: 0.6;
+}
+
+.is-night .hero-card {
+    opacity: 0.75;
+}
+
+.is-night .hero :focus-visible {
+    outline-color: var(--gold);
+}
+
+@media (max-width: 600px) {
+    .arcano-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .arcano-pick {
+        grid-template-columns: auto minmax(0, 1fr);
+        text-align: left;
+    }
+
+    .arcano-row .btn {
+        flex: 1 1 100%;
+    }
+
+    .arcano-input {
+        width: 100%;
+    }
+}
+
 /* =========================================================
    RESPONSIVO
    ========================================================= */
