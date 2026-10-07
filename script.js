@@ -10,6 +10,7 @@
     const WHATSAPP_NUMBER = '5524999894376';
     const RUSH = { name: 'Furar fila (atendimento imediato)', price: 50 };
     const STORAGE_KEY = 'noctun:pedido:v1';
+    const BIRTH_KEY = 'noctun:nascimento'; // data informada em "Seu arcano" (só neste aparelho)
     const MAX_QTY = 20;
 
     const brl = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -31,7 +32,7 @@
 
     // =====================================================
     // 1. Catálogo (fonte única: os botões do HTML)
-    //    data-kind="produto" → vela/banho; sem ele → leitura/trabalho
+    //    data-kind="produto" → vela/banho; sem ele → leitura
     //    data-price-from     → preço "a partir de" (varia com as opções)
     //    data-options        → opções obrigatórias (ex.: "essencia cor")
     // =====================================================
@@ -158,7 +159,7 @@
     const itemCount = () => state.items.reduce((sum, item) => sum + item.qty, 0);
     const hasService = () => state.items.some(isService);
     const hasVariablePrice = () => state.items.some((item) => catalog.get(item.id).from);
-    // "Furar fila" vale para a fila de leituras: só conta se houver leitura/trabalho no pedido
+    // "Furar fila" vale para a fila de leituras: só conta se houver leitura no pedido
     const rushActive = () => state.rush && hasService();
     const orderTotal = () =>
         lineItems().reduce((sum, item) => sum + item.total, 0) + (rushActive() ? RUSH.price : 0);
@@ -423,8 +424,10 @@
         drawer.classList.remove('is-open');
         backdrop.classList.remove('is-open');
         drawer.inert = true;
-        pageRegions.forEach((el) => { el.inert = false; });
-        document.body.classList.remove('no-scroll');
+        if (!isOracleOpen()) {
+            pageRegions.forEach((el) => { el.inert = false; });
+            document.body.classList.remove('no-scroll');
+        }
 
         if (restoreFocus && lastFocus && document.contains(lastFocus)) {
             lastFocus.focus({ preventScroll: true });
@@ -444,7 +447,7 @@
 
         const lines = ['Olá, Guilherme! 🔮 Vim pelo site e gostaria de fazer este pedido:', ''];
         if (services.length && products.length) {
-            lines.push('*Leituras e trabalhos:*', ...services.map(line), ...rushLine, '', '*Velas e banhos:*', ...products.map(line));
+            lines.push('*Leituras:*', ...services.map(line), ...rushLine, '', '*Velas e banhos:*', ...products.map(line));
         } else {
             lines.push(...items.map(line), ...rushLine);
         }
@@ -453,7 +456,7 @@
 
         // Pede só os dados que fazem sentido para o que foi pedido
         lines.push('', '*Meus dados:*', 'Nome completo: ');
-        if (services.length) lines.push('Data de nascimento: ', 'Contexto da história: ');
+        if (services.length) lines.push(`Data de nascimento: ${savedBirth()}`, 'Contexto da história: ');
         if (products.length) lines.push('Cidade/bairro (para combinarmos a entrega): ');
         return lines.join('\n');
     }
@@ -518,6 +521,12 @@
             return;
         }
 
+        const oracleCloser = event.target.closest('[data-oracle-close]');
+        if (oracleCloser) {
+            closeOracle({ restoreFocus: oracleCloser.tagName !== 'A' });
+            return;
+        }
+
         if (event.target.closest('[data-checkout]')) {
             checkout();
             return;
@@ -558,7 +567,8 @@
 
     document.addEventListener('keydown', (event) => {
         if (event.key !== 'Escape') return;
-        if (isCartOpen()) closeCart();
+        if (isOracleOpen()) closeOracle();
+        else if (isCartOpen()) closeCart();
         else if (nav.classList.contains('is-open')) {
             setMenu(false);
             menuBtn.focus();
@@ -694,26 +704,64 @@
     }
 
     // =====================================================
-    // 10. Tiragens interativas: toque para virar as cartas
+    // 10. Tiragens interativas: embaralhar de verdade, virar e ler
     // =====================================================
-    function sparkle(card) {
-        if (reduceMotion || !card.animate) return;
-        const slot = card.closest('.slot');
-        const total = 7;
-        for (let i = 0; i < total; i += 1) {
+
+    // Os 22 Arcanos Maiores com o significado geral (tradicional) de cada carta.
+    // A interpretação para a pergunta da pessoa fica para a leitura paga.
+    const ARCANA = [
+        { num: '0', name: 'O Louco', glyph: 'g-louco', keys: ['Recomeço', 'Liberdade', 'Fé'], meaning: 'Começos, liberdade e confiança no novo. Pede coragem para dar o primeiro passo, com leveza.' },
+        { num: 'I', name: 'O Mago', glyph: 'g-mago', keys: ['Iniciativa', 'Habilidade', 'Poder pessoal'], meaning: 'Você tem os recursos para fazer acontecer. É hora de agir e colocar a intenção em prática.' },
+        { num: 'II', name: 'A Sacerdotisa', glyph: 'g-sacerdotisa', keys: ['Intuição', 'Mistério', 'Silêncio'], meaning: 'Há algo que ainda não foi dito. Escute a voz interior antes de decidir.' },
+        { num: 'III', name: 'A Imperatriz', glyph: 'g-imperatriz', keys: ['Afeto', 'Criatividade', 'Abundância'], meaning: 'Energia de cuidado, beleza e fertilidade. Momento de nutrir o que você quer ver florescer.' },
+        { num: 'IV', name: 'O Imperador', glyph: 'g-imperador', keys: ['Estrutura', 'Firmeza', 'Proteção'], meaning: 'Organização, limites claros e responsabilidade. A estabilidade vem de assumir o controle.' },
+        { num: 'V', name: 'O Hierofante', glyph: 'g-hierofante', keys: ['Tradição', 'Conselho', 'Compromisso'], meaning: 'Valores, aprendizado e laços firmes. Fala de orientação e de seguir o que tem raiz.' },
+        { num: 'VI', name: 'Os Enamorados', glyph: 'g-enamorados', keys: ['União', 'Escolha', 'Desejo'], meaning: 'Conexão verdadeira e escolhas do coração. Pede decidir com sinceridade sobre o que você quer.' },
+        { num: 'VII', name: 'O Carro', glyph: 'g-carro', keys: ['Avanço', 'Foco', 'Conquista'], meaning: 'Movimento e determinação. A vitória vem de manter a direção e o controle das emoções.' },
+        { num: 'VIII', name: 'A Força', glyph: 'g-infinity', keys: ['Coragem', 'Paciência', 'Autoconfiança'], meaning: 'A força que vem do coração: domínio de si, gentileza e coragem para enfrentar o que assusta.' },
+        { num: 'IX', name: 'O Eremita', glyph: 'g-eremita', keys: ['Reflexão', 'Recolhimento', 'Sabedoria'], meaning: 'Um tempo para olhar para dentro. As respostas chegam no silêncio e na calma.' },
+        { num: 'X', name: 'A Roda da Fortuna', glyph: 'g-roda', keys: ['Ciclos', 'Mudança', 'Destino'], meaning: 'A roda gira: o que estava parado começa a se mover. Uma virada está em curso.' },
+        { num: 'XI', name: 'A Justiça', glyph: 'g-scales', keys: ['Verdade', 'Equilíbrio', 'Decisão'], meaning: 'Verdade e consequências. Cada escolha volta com o seu peso justo.' },
+        { num: 'XII', name: 'O Enforcado', glyph: 'g-enforcado', keys: ['Pausa', 'Entrega', 'Novo olhar'], meaning: 'Uma pausa necessária. Soltar o controle ajuda a enxergar a situação por outro ângulo.' },
+        { num: 'XIII', name: 'A Morte', glyph: 'g-morte', keys: ['Transformação', 'Fim de ciclo', 'Renovação'], meaning: 'Raramente fala de morte literal: é o fim de um ciclo que abre espaço para o novo.' },
+        { num: 'XIV', name: 'Temperança', glyph: 'g-cup', keys: ['Equilíbrio', 'Calma', 'Cura'], meaning: 'A medida certa. Paciência e harmonia acalmam o que estava em conflito.' },
+        { num: 'XV', name: 'O Diabo', glyph: 'g-diabo', keys: ['Apego', 'Desejo', 'Sombra'], meaning: 'Desejos e padrões que prendem. Mostra o que seduz e precisa ser visto com honestidade.' },
+        { num: 'XVI', name: 'A Torre', glyph: 'g-torre', keys: ['Ruptura', 'Revelação', 'Libertação'], meaning: 'O que estava mal construído cai. Uma revelação súbita abre caminho para a verdade.' },
+        { num: 'XVII', name: 'A Estrela', glyph: 'g-star', keys: ['Esperança', 'Inspiração', 'Cura'], meaning: 'Depois da tempestade, a luz volta. Fé no futuro e renovação da esperança.' },
+        { num: 'XVIII', name: 'A Lua', glyph: 'g-moon', keys: ['Intuição', 'Ilusão', 'Mistério'], meaning: 'Nem tudo está claro. Atenção ao que se esconde nas sombras e ao que a intuição avisa.' },
+        { num: 'XIX', name: 'O Sol', glyph: 'g-sun', keys: ['Alegria', 'Clareza', 'Vitória'], meaning: 'Calor, verdade e sucesso. Energia de clareza e realização.' },
+        { num: 'XX', name: 'O Julgamento', glyph: 'g-julgamento', keys: ['Despertar', 'Chamado', 'Renascimento'], meaning: 'Um chamado para rever o passado e seguir renovado. Hora de despertar.' },
+        { num: 'XXI', name: 'O Mundo', glyph: 'g-world', keys: ['Realização', 'Plenitude', 'Conclusão'], meaning: 'Um ciclo se completa com sensação de vitória. Plenitude e integração.' },
+    ];
+
+    function shuffled(list) {
+        const copy = list.slice();
+        for (let i = copy.length - 1; i > 0; i -= 1) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [copy[i], copy[j]] = [copy[j], copy[i]];
+        }
+        return copy;
+    }
+
+    // Faíscas douradas saindo do centro de um elemento
+    function burst(container, { count = 7, distance = 40, className = 'spark' } = {}) {
+        if (reduceMotion || !container || !container.animate) return;
+        for (let i = 0; i < count; i += 1) {
             const el = document.createElement('span');
-            el.className = 'spark';
+            el.className = className;
             el.innerHTML = '<svg aria-hidden="true"><use href="#twinkle"/></svg>';
-            slot.append(el);
-            const angle = (Math.PI * 2 * i) / total + Math.random() * 0.6;
-            const dist = 40 + Math.random() * 32;
+            container.append(el);
+            const angle = (Math.PI * 2 * i) / count + Math.random() * 0.6;
+            const dist = distance + Math.random() * distance * 0.8;
             el.animate([
                 { transform: 'translate(0, 0) scale(0) rotate(0deg)', opacity: 1 },
                 { transform: `translate(${Math.cos(angle) * dist}px, ${Math.sin(angle) * dist}px) scale(${0.5 + Math.random() * 0.7}) rotate(90deg)`, opacity: 0 },
-            ], { duration: 750 + Math.random() * 300, delay: 220, easing: 'cubic-bezier(0.2, 0.8, 0.3, 1)', fill: 'both' })
+            ], { duration: 750 + Math.random() * 300, delay: 150, easing: 'cubic-bezier(0.2, 0.8, 0.3, 1)', fill: 'both' })
                 .onfinish = () => el.remove();
         }
     }
+
+    const sparkle = (card) => burst(card.closest('.slot'));
 
     function setupBoard(board) {
         const cards = [...board.querySelectorAll('[data-card]')];
@@ -721,30 +769,42 @@
         const info = wrap.querySelector('[data-board-info]');
         const kicker = info.querySelector('[data-info-kicker]');
         const title = info.querySelector('[data-info-title]');
+        const keys = info.querySelector('[data-info-keys]');
         const text = info.querySelector('[data-info-text]');
         const count = wrap.querySelector('[data-count]');
         const allBtn = wrap.querySelector('[data-reveal-all]');
         const questions = board.dataset.questions ? document.getElementById(board.dataset.questions) : null;
-        const defaults = [kicker.textContent, title.textContent, text.textContent];
+        const defaults = [kicker.textContent, title.textContent, '', text.textContent];
+        let busy = false;
 
         const isFlipped = (card) => card.classList.contains('is-flipped');
-        const details = (card) => ({
-            pos: card.dataset.pos,
-            text: card.dataset.text,
-            num: card.querySelector('.tcard-num').textContent,
-            name: card.querySelector('.tcard-name').textContent,
-        });
+        const arcanumOf = (card) => ARCANA[Number(card.dataset.arcanum)];
 
         function label(card) {
-            const { pos, name, num } = details(card);
+            const arcanum = arcanumOf(card);
             card.setAttribute('aria-label', isFlipped(card)
-                ? `${pos}: ${name} (${num}). Toque para virar de volta.`
-                : `${pos}: carta virada para baixo. Toque para revelar.`);
+                ? `${card.dataset.pos}: ${arcanum.name}. Toque para virar de volta.`
+                : `${card.dataset.pos}: carta virada para baixo. Toque para revelar.`);
         }
 
-        function showInfo(k, t, x) {
+        // Sorteia arcanos diferentes para cada posição (as cartas estão viradas para baixo)
+        function deal() {
+            const drawn = shuffled(ARCANA.map((_, i) => i)).slice(0, cards.length);
+            cards.forEach((card, i) => {
+                const arcanum = ARCANA[drawn[i]];
+                card.dataset.arcanum = String(drawn[i]);
+                card.querySelector('.tcard-num').textContent = arcanum.num;
+                card.querySelector('.tcard-front use').setAttribute('href', `#${arcanum.glyph}`);
+                card.querySelector('.tcard-name').textContent = arcanum.name;
+                label(card);
+            });
+        }
+
+        function showInfo(k, t, keyText, x) {
             kicker.textContent = k;
             title.textContent = t;
+            keys.textContent = keyText;
+            keys.hidden = !keyText;
             text.textContent = x;
             info.classList.remove('is-updating');
             void info.offsetWidth; // reinicia a animação do texto
@@ -752,8 +812,10 @@
         }
 
         function showCard(card) {
-            const { pos, text: question, name, num } = details(card);
-            showInfo(pos, question, `Carta ilustrativa: ${name} (${num})`);
+            const arcanum = arcanumOf(card);
+            // No Templo do Diabo, o significado geral não responde à pergunta: isso fica para a leitura
+            const answer = questions ? ` A resposta para “${card.dataset.text}” vem na leitura completa.` : '';
+            showInfo(`${card.dataset.pos} · ${arcanum.num}`, arcanum.name, arcanum.keys.join(' · '), arcanum.meaning + answer);
         }
 
         function setCurrent(card) {
@@ -768,11 +830,13 @@
             const all = flipped === cards.length;
             count.textContent = String(flipped);
             board.classList.toggle('has-flipped', flipped > 0);
+            board.classList.toggle('is-complete', all);
             allBtn.querySelector('span').textContent = all ? 'Embaralhar' : 'Revelar todas';
             allBtn.querySelector('use').setAttribute('href', all ? '#i-shuffle' : '#i-eye');
         }
 
         function toggle(card) {
+            if (busy) return;
             const reveal = !isFlipped(card);
             card.classList.toggle('is-flipped', reveal);
             label(card);
@@ -781,8 +845,11 @@
                 showCard(card);
                 sparkle(card);
             } else if (card.classList.contains('is-current')) {
-                setCurrent(null);
-                showInfo(...defaults);
+                // volta para a última carta que continua aberta; sem nenhuma, mostra a instrução inicial
+                const still = cards.filter(isFlipped).pop();
+                setCurrent(still || null);
+                if (still) showCard(still);
+                else showInfo(...defaults);
             }
             update();
         }
@@ -802,20 +869,54 @@
             setTimeout(() => board.classList.remove('is-dealing'), hidden.length * 110 + 900);
         }
 
+        // Embaralhar: vira tudo, junta num maço no centro, sorteia de novo e distribui
         function shuffle() {
-            board.classList.add('is-shuffling');
-            cards.forEach((card) => {
-                card.classList.remove('is-flipped');
-                label(card);
-            });
+            if (busy) return;
+            busy = true;
+            board.classList.add('is-busy');
+            const wasOpen = cards.some(isFlipped);
+            cards.forEach((card) => card.classList.remove('is-flipped'));
             setCurrent(null);
-            showInfo(...defaults);
+            showInfo('Embaralhando…', 'As cartas estão sendo misturadas', '', 'Em instantes, uma nova tiragem.');
             update();
-            setTimeout(() => board.classList.remove('is-shuffling'), 1100);
+
+            const finish = () => {
+                cards.forEach((card) => ['--to-x', '--to-y', '--to-r'].forEach((prop) => card.style.removeProperty(prop)));
+                board.classList.remove('is-busy', 'is-dealing-back');
+                busy = false;
+                showInfo('Nova tiragem', 'Toque nas cartas para revelar', '', defaults[3]);
+                update();
+            };
+
+            if (reduceMotion) {
+                deal();
+                finish();
+                return;
+            }
+
+            setTimeout(() => {
+                const box = board.getBoundingClientRect();
+                const cx = box.left + box.width / 2;
+                const cy = box.top + box.height / 2;
+                cards.forEach((card, i) => {
+                    const r = card.getBoundingClientRect();
+                    card.style.setProperty('--to-x', `${(cx - (r.left + r.width / 2)).toFixed(1)}px`);
+                    card.style.setProperty('--to-y', `${(cy - (r.top + r.height / 2)).toFixed(1)}px`);
+                    card.style.setProperty('--to-r', `${(i % 2 ? 1 : -1) * (3 + i * 2)}deg`);
+                });
+                board.classList.add('is-gathering');
+
+                setTimeout(() => {
+                    deal(); // troca as cartas enquanto estão empilhadas e viradas
+                    burst(board, { count: 12, distance: 60, className: 'spark spark--center' });
+                    board.classList.add('is-dealing-back');
+                    board.classList.remove('is-gathering');
+                    setTimeout(finish, cards.length * 90 + 750);
+                }, 1000);
+            }, wasOpen ? 650 : 50);
         }
 
         cards.forEach((card) => {
-            label(card);
             card.addEventListener('click', () => {
                 toggle(card);
                 haptic(isFlipped(card) ? 14 : 8);
@@ -823,6 +924,7 @@
         });
 
         allBtn.addEventListener('click', () => {
+            if (busy) return;
             if (cards.every(isFlipped)) shuffle();
             else revealAll();
             haptic();
@@ -834,7 +936,7 @@
                 let rect = null;
                 card.addEventListener('pointerenter', () => { rect = card.getBoundingClientRect(); });
                 card.addEventListener('pointermove', (event) => {
-                    if (event.pointerType !== 'mouse' || !rect) return;
+                    if (event.pointerType !== 'mouse' || !rect || busy) return;
                     const x = clamp((event.clientX - rect.left) / rect.width, 0, 1);
                     const y = clamp((event.clientY - rect.top) / rect.height, 0, 1);
                     card.classList.add('is-tilting');
@@ -852,11 +954,18 @@
             });
         }
 
+        deal(); // cada visita começa com uma tiragem diferente
         board.classList.add('is-interactive');
         update();
     }
 
     document.querySelectorAll('[data-board]').forEach(setupBoard);
+
+    // Botões de compra espalhados pelo site (painéis, quiz, carta do dia):
+    // nome e preço vêm do catálogo, nunca repetidos no HTML.
+    const shortPrice = (value) => (Number.isInteger(value) ? `R$ ${value}` : formatBRL(value));
+    document.querySelectorAll('[data-cta]').forEach((btn) => labelCta(btn));
+
 
     // =====================================================
     // 11. Hero com profundidade + barra de progresso
@@ -864,6 +973,7 @@
     //     mouse e inclinação do celular.
     // =====================================================
     const hero = document.querySelector('.hero');
+    const catbarEl = document.querySelector('[data-catbar]');
     const progressBar = document.querySelector('[data-progress]');
     const tilt = { x: 0, y: 0 };      // alvo (mouse ou giroscópio)
     const smooth = { x: 0, y: 0 };    // valor suavizado aplicado
@@ -876,8 +986,11 @@
         const y = window.scrollY;
         const scrollable = document.documentElement.scrollHeight - window.innerHeight;
         const heroHeight = hero.offsetHeight;
+        const headerHeight = header.offsetHeight;
+        const catbarTop = catbarEl ? catbarEl.getBoundingClientRect().top : Infinity;
 
         header.classList.toggle('is-scrolled', y > 8);
+        if (catbarEl) catbarEl.classList.toggle('is-stuck', catbarTop <= headerHeight + 1);
         progressBar.style.transform = `scaleX(${scrollable > 0 ? clamp(y / scrollable, 0, 1).toFixed(4) : 0})`;
 
         if (reduceMotion || !heroVisible) return;
@@ -976,6 +1089,753 @@
 
     drawerHead.addEventListener('pointerup', endDrag);
     drawerHead.addEventListener('pointercancel', endDrag);
+
+    // =====================================================
+    // 13. Quiz "Qual leitura é para você?"
+    //     As recomendações usam só as descrições do próprio catálogo.
+    // =====================================================
+    const QUIZ = {
+        inicio: {
+            question: 'Sobre o que é a sua pergunta?',
+            options: [
+                { label: 'Amor e relacionamento', hint: 'sentimentos, intenções, futuro', glyph: 'g-enamorados', next: 'amor' },
+                { label: 'Desconfiança na relação', hint: 'traição, mentiras, algo escondido', glyph: 'g-moon', result: 'templo-diabo' },
+                { label: 'Uma dúvida pontual', hint: 'qualquer tema, uma pergunta', glyph: 'g-star', next: 'pontual' },
+                { label: 'Vários assuntos', hint: 'olhar a vida com calma', glyph: 'g-world', next: 'consulta' },
+            ],
+        },
+        amor: {
+            question: 'O que você quer entender?',
+            options: [
+                { label: 'A relação como um todo', hint: 'pensamentos, sentimentos, intenções e futuro', glyph: 'g-sun', result: 'templo-afrodite' },
+                { label: 'Uma pergunta específica', hint: 'uma resposta mais direta', glyph: 'g-star', next: 'pontual' },
+            ],
+        },
+        pontual: {
+            question: 'Como você quer a resposta?',
+            options: [
+                { label: 'Direta e objetiva', hint: 'para decidir rápido', glyph: 'g-star', result: 'pergunta-objetiva' },
+                { label: 'Com análise e conselhos', hint: 'para entender a situação a fundo', glyph: 'g-scales', result: 'pergunta-aprofundada' },
+            ],
+        },
+        consulta: {
+            question: 'Quanto tempo você quer?',
+            options: [
+                { label: '30 minutos', hint: 'os temas principais', glyph: 'g-star', result: 'leitura-30min' },
+                { label: '1 hora', hint: 'um mergulho no momento atual', glyph: 'g-sun', result: 'leitura-1h' },
+                { label: '2 horas', hint: 'vários temas, com calma', glyph: 'g-world', result: 'leitura-2h' },
+            ],
+        },
+    };
+
+    const QUIZ_RESULTS = {
+        'pergunta-objetiva': { glyph: 'g-star', why: 'Para uma questão pontual, com resposta clara e direta.' },
+        'pergunta-aprofundada': { glyph: 'g-scales', why: 'Análise detalhada de uma situação específica, com conselhos.' },
+        'leitura-30min': { glyph: 'g-star', why: 'Tempo livre para abordar os temas que você precisar.' },
+        'leitura-1h': { glyph: 'g-sun', why: 'Uma sessão completa para mergulhar no seu momento atual.' },
+        'leitura-2h': { glyph: 'g-world', why: 'A consulta mais completa, para vários temas com calma.' },
+        'templo-afrodite': { glyph: 'g-enamorados', why: 'Leitura para questões amorosas, autoestima e conexões afetivas: olha pensamentos, sentimentos, intenções e o futuro da relação.' },
+        'templo-diabo': { glyph: 'g-diabo', why: 'Tiragem profunda para relações intensas e dinâmicas ocultas: investiga apego, mentiras, desejos e padrões que podem estar prendendo você.' },
+    };
+
+    const SVG_NS = 'http://www.w3.org/2000/svg';
+    function svgIcon(id) {
+        const svg = document.createElementNS(SVG_NS, 'svg');
+        svg.setAttribute('aria-hidden', 'true');
+        const use = document.createElementNS(SVG_NS, 'use');
+        use.setAttribute('href', `#${id}`);
+        svg.append(use);
+        return svg;
+    }
+
+    function make(tag, className, text) {
+        const el = document.createElement(tag);
+        if (className) el.className = className;
+        if (text !== undefined) el.textContent = text;
+        return el;
+    }
+
+    // Leva até o item no catálogo e dá um brilho nele
+    function goToProduct(id) {
+        const btn = document.querySelector(`[data-add][data-name][data-id="${id}"]`);
+        if (!btn) return;
+        const spread = btn.closest('.spread');
+        const target = btn.closest('.price-row') || (spread && spread.querySelector('.board-card')) || btn.closest('.product') || btn;
+        target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' });
+        setTimeout(() => {
+            target.classList.remove('is-highlight');
+            void target.offsetWidth;
+            target.classList.add('is-highlight');
+        }, reduceMotion ? 0 : 450);
+    }
+
+    const quiz = document.querySelector('[data-quiz]');
+    if (quiz) {
+        const stage = quiz.querySelector('[data-quiz-stage]');
+        const dots = [...quiz.querySelectorAll('[data-quiz-progress] span')];
+        let current = 'inicio';
+        let history = [];
+
+        const setProgress = (index) => dots.forEach((dot, i) => {
+            dot.classList.toggle('is-done', i < index);
+            dot.classList.toggle('is-current', i === index);
+        });
+
+        function keepInView() {
+            const top = quiz.getBoundingClientRect().top;
+            if (top < header.offsetHeight || top > window.innerHeight * 0.6) {
+                quiz.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+            }
+        }
+
+        function swap(node, focusEl, interactive) {
+            const old = stage.firstElementChild;
+            const put = () => {
+                stage.replaceChildren(node);
+                if (interactive) {
+                    focusEl.focus({ preventScroll: true });
+                    keepInView();
+                }
+            };
+            if (interactive && old && old.classList.contains('quiz-step') && !reduceMotion) {
+                // o passo que está saindo não aceita mais cliques (evita voltar duas vezes)
+                old.querySelectorAll('button').forEach((b) => { b.disabled = true; });
+                old.classList.add('is-leaving');
+                setTimeout(put, 200);
+            } else {
+                put();
+            }
+        }
+
+        function navRow(withRestart) {
+            const nav = make('div', 'quiz-nav');
+            if (history.length) {
+                const back = make('button', 'quiz-link quiz-link--back');
+                back.type = 'button';
+                back.append(svgIcon('i-arrow'), document.createTextNode('Voltar'));
+                back.addEventListener('click', () => {
+                    if (!history.length) return;
+                    current = history.pop();
+                    renderStep(current, true);
+                });
+                nav.append(back);
+            }
+            if (withRestart) {
+                const restart = make('button', 'quiz-link');
+                restart.type = 'button';
+                restart.append(svgIcon('i-shuffle'), document.createTextNode('Refazer'));
+                restart.addEventListener('click', () => {
+                    history = [];
+                    current = 'inicio';
+                    renderStep(current, true);
+                });
+                nav.append(restart);
+            }
+            return nav;
+        }
+
+        function choose(button, option) {
+            // trava o passo inteiro (opções e Voltar) até a próxima tela entrar
+            stage.querySelectorAll('button').forEach((b) => { b.disabled = true; });
+            button.classList.add('is-picked');
+            haptic(10);
+            setTimeout(() => {
+                history.push(current);
+                if (option.result) {
+                    renderResult(option.result);
+                } else {
+                    current = option.next;
+                    renderStep(current, true);
+                }
+            }, reduceMotion ? 0 : 170);
+        }
+
+        function renderStep(key, interactive) {
+            const step = QUIZ[key];
+            const node = make('div', 'quiz-step');
+            const heading = make('h3', 'quiz-q', step.question);
+            heading.tabIndex = -1;
+            const list = make('div', `quiz-options${step.options.length === 3 ? ' quiz-options--3' : ''}`);
+            step.options.forEach((option) => {
+                const button = make('button', 'quiz-option');
+                button.type = 'button';
+                const glyph = make('span', 'quiz-option-glyph');
+                glyph.append(svgIcon(option.glyph));
+                const words = make('span');
+                words.append(make('span', 'quiz-option-label', option.label), make('span', 'quiz-option-hint', option.hint));
+                button.append(glyph, words);
+                button.addEventListener('click', () => choose(button, option));
+                list.append(button);
+            });
+            node.append(make('p', 'quiz-step-label', `Pergunta ${history.length + 1}`), heading, list);
+            if (history.length) node.append(navRow(false));
+            setProgress(history.length);
+            swap(node, heading, interactive);
+        }
+
+        function renderResult(id) {
+            const product = catalog.get(id);
+            const result = QUIZ_RESULTS[id];
+            const node = make('div', 'quiz-step');
+            const box = make('div', 'quiz-result');
+
+            // A recomendação aparece como uma carta que vira
+            const card = make('div', 'quiz-card');
+            const inner = make('div', 'quiz-card-inner');
+            const front = make('div', 'quiz-card-face quiz-card-front');
+            front.append(svgIcon(result.glyph), make('span', 'quiz-card-name', product.name));
+            const back = make('div', 'quiz-card-face quiz-card-back');
+            back.append(svgIcon('card-back'));
+            inner.append(front, back);
+            card.append(inner);
+
+            const body = make('div', 'quiz-result-body');
+            const heading = make('h3', '', product.name);
+            heading.tabIndex = -1;
+            const price = make('p', 'price-tag');
+            price.append(make('small', '', 'R$'), document.createTextNode(String(product.price)));
+
+            const rush = make('p', 'quiz-rush');
+            rush.append('Com pressa? No pedido, marque ', make('strong', '', 'Furar fila'), ` (+ ${shortPrice(RUSH.price)}) e seja atendido na hora.`);
+
+            const actions = make('div', 'quiz-actions');
+            const add = make('button', 'btn btn-gold btn-shine');
+            add.type = 'button';
+            add.dataset.add = '';
+            add.dataset.id = id;
+            add.setAttribute('aria-label', `Adicionar ${product.name} ao pedido`);
+            add.append(svgIcon('i-plus'), make('span', '', 'Adicionar ao pedido'));
+            const see = make('button', 'btn btn-ghost', 'Ver no catálogo');
+            see.type = 'button';
+            see.addEventListener('click', () => goToProduct(id));
+            actions.append(add, see);
+
+            body.append(make('p', 'quiz-step-label', 'A leitura para você'), heading, price, make('p', 'quiz-why', result.why), rush, actions);
+            box.append(card, body);
+            node.append(box, navRow(true));
+            setProgress(2);
+            swap(node, heading, true);
+            setTimeout(() => burst(card, { count: 9, distance: 60, className: 'spark spark--center' }), reduceMotion ? 0 : 1100);
+        }
+
+        renderStep(current, false);
+    }
+
+    // =====================================================
+    // 14. Catálogo: barra de categorias que acompanha a rolagem
+    // =====================================================
+    const catbar = document.querySelector('[data-catbar]');
+    if (catbar && 'IntersectionObserver' in window) {
+        const track = catbar.querySelector('[data-catbar-track]');
+        const chips = [...track.querySelectorAll('a')];
+        const targets = chips.map((chip) => document.querySelector(chip.getAttribute('href')));
+        const visible = new Map();
+        let active = null;
+
+        const setActive = (chip) => {
+            if (chip === active) return;
+            active = chip;
+            chips.forEach((c) => {
+                c.classList.toggle('is-active', c === chip);
+                if (c === chip) c.setAttribute('aria-current', 'true');
+                else c.removeAttribute('aria-current');
+            });
+            if (chip) {
+                track.scrollTo({
+                    left: chip.offsetLeft - (track.clientWidth - chip.offsetWidth) / 2,
+                    behavior: reduceMotion ? 'auto' : 'smooth',
+                });
+            }
+        };
+
+        // Depois de um clique, o chip escolhido fica travado até a rolagem terminar
+        let locked = false;
+        let unlockTimer = 0;
+        const unlockLater = (ms) => {
+            clearTimeout(unlockTimer);
+            unlockTimer = setTimeout(() => { locked = false; }, ms);
+        };
+        window.addEventListener('scroll', () => { if (locked) unlockLater(160); }, { passive: true });
+
+        const spy = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => visible.set(entry.target, entry.isIntersecting));
+            if (locked) return;
+            // Mantém o chip atual enquanto a seção dele estiver na faixa: no desktop,
+            // "Perguntas" e "Consultas" ficam lado a lado e entram na faixa juntas
+            const current = chips.indexOf(active);
+            if (current !== -1 && visible.get(targets[current])) return;
+            const first = targets.findIndex((target) => visible.get(target));
+            if (first !== -1) setActive(chips[first]);
+        }, { rootMargin: '-150px 0px -50% 0px' });
+        targets.forEach((target) => { if (target) spy.observe(target); });
+        chips.forEach((chip) => chip.addEventListener('click', () => {
+            locked = true;
+            unlockLater(1000);
+            setActive(chip);
+        }));
+    }
+
+    // =====================================================
+    // 15. Carta do dia: tocar no emblema embaralha e revela uma carta
+    //     A mesma pessoa vê a mesma carta durante o dia.
+    // =====================================================
+    const SALT_KEY = 'noctun:carta';
+    const oracle = document.getElementById('carta-do-dia');
+    const oracleBackdrop = document.querySelector('.oracle-backdrop');
+    const shuffleBtn = document.querySelector('[data-shuffle]');
+    let oracleReturn = null;
+    let oracleTimers = [];
+    let oracleOpenTimer = 0;
+
+    const isOracleOpen = () => oracle.classList.contains('is-open');
+
+    function dailyArcanum() {
+        const now = new Date();
+        const day = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+        let salt = 'noctun';
+        try {
+            salt = localStorage.getItem(SALT_KEY) || '';
+            if (!salt) {
+                salt = Math.random().toString(36).slice(2, 10);
+                localStorage.setItem(SALT_KEY, salt);
+            }
+        } catch {
+            salt = 'noctun';
+        }
+        let hash = 2166136261;
+        for (const ch of day + salt) {
+            hash ^= ch.codePointAt(0);
+            hash = Math.imul(hash, 16777619);
+        }
+        return ARCANA[(hash >>> 0) % ARCANA.length];
+    }
+
+    function openOracle() {
+        // não abre por cima do pedido (a pessoa pode ter aberto o pedido durante o embaralhar)
+        if (isOracleOpen() || isCartOpen()) return;
+        const arcanum = dailyArcanum();
+        oracle.querySelector('[data-oracle-num]').textContent = arcanum.num;
+        oracle.querySelector('[data-oracle-glyph]').setAttribute('href', `#${arcanum.glyph}`);
+        oracle.querySelector('[data-oracle-card-name]').textContent = arcanum.name;
+        oracle.querySelector('[data-oracle-name]').textContent = arcanum.name;
+        oracle.querySelector('[data-oracle-meaning]').textContent = arcanum.meaning;
+        const keyList = oracle.querySelector('[data-oracle-keys]');
+        keyList.replaceChildren(...arcanum.keys.map((key) => make('li', '', key)));
+
+        oracleReturn = document.activeElement;
+        setMenu(false);
+        toastRegion.replaceChildren();
+        oracle.inert = false;
+        oracle.classList.add('is-open');
+        oracleBackdrop.classList.add('is-open');
+        pageRegions.forEach((el) => { el.inert = true; });
+        document.body.classList.add('no-scroll');
+        oracle.querySelector('.oracle-close').focus({ preventScroll: true });
+
+        oracleTimers.forEach(clearTimeout);
+        oracleTimers = [
+            setTimeout(() => oracle.classList.add('is-revealed'), reduceMotion ? 0 : 450),
+            setTimeout(() => burst(oracle.querySelector('[data-oracle-card]'), { count: 12, distance: 80, className: 'spark spark--center' }), 1000),
+        ];
+    }
+
+    function closeOracle({ restoreFocus = true } = {}) {
+        clearTimeout(oracleOpenTimer);
+        if (!isOracleOpen()) return;
+        oracleTimers.forEach(clearTimeout);
+        oracle.classList.remove('is-open', 'is-revealed');
+        oracleBackdrop.classList.remove('is-open');
+        oracle.inert = true;
+        if (!isCartOpen()) {
+            pageRegions.forEach((el) => { el.inert = false; });
+            document.body.classList.remove('no-scroll');
+        }
+        if (restoreFocus && oracleReturn && document.contains(oracleReturn)) oracleReturn.focus({ preventScroll: true });
+    }
+
+    if (shuffleBtn) {
+        const art = shuffleBtn.closest('.hero-art');
+        let shuffleTimer = 0;
+        shuffleBtn.addEventListener('click', () => {
+            art.classList.add('has-shuffled');
+            art.classList.remove('is-shuffling');
+            void art.offsetWidth;
+            art.classList.add('is-shuffling');
+            burst(art, { count: 10, distance: 90, className: 'spark spark--center' });
+            haptic(14);
+            clearTimeout(shuffleTimer);
+            shuffleTimer = setTimeout(() => art.classList.remove('is-shuffling'), 1050);
+            clearTimeout(oracleOpenTimer);
+            oracleOpenTimer = setTimeout(openOracle, reduceMotion ? 0 : 750);
+        });
+    }
+
+    // =====================================================
+    // 16. Lua de hoje (fase calculada; desenho como visto no Brasil)
+    // =====================================================
+    // Instante de uma fase principal: Meeus, "Astronomical Algorithms", cap. 49
+    // (termos periódicos principais; erro de poucos minutos).
+    // lunation: lunações desde jan/2000; quarter: 0 nova, 1 quarto crescente, 2 cheia, 3 quarto minguante
+    function moonPhaseTime(lunation, quarter) {
+        const k = lunation + quarter / 4;
+        const T = k / 1236.85;
+        const rad = Math.PI / 180;
+        const E = 1 - 0.002516 * T - 0.0000074 * T * T;
+        const M = (2.5534 + 29.1053567 * k - 0.0000014 * T * T) * rad;
+        const Mp = (201.5643 + 385.81693528 * k + 0.0107582 * T * T) * rad;
+        const F = (160.7108 + 390.67050284 * k - 0.0016118 * T * T) * rad;
+        const omega = (124.7746 - 1.56375588 * k + 0.0020672 * T * T) * rad;
+        const { sin, cos } = Math;
+        let jde = 2451550.09766 + 29.530588861 * k + 0.00015437 * T * T - 0.00000015 * T ** 3 + 0.00000000073 * T ** 4;
+
+        if (quarter % 2 === 0) {
+            const c = quarter === 0
+                ? [-0.40720, 0.17241, 0.01608, 0.01039, 0.00739, -0.00514, 0.00208]
+                : [-0.40614, 0.17302, 0.01614, 0.01043, 0.00734, -0.00515, 0.00209];
+            jde += c[0] * sin(Mp) + c[1] * E * sin(M) + c[2] * sin(2 * Mp) + c[3] * sin(2 * F)
+                + c[4] * E * sin(Mp - M) + c[5] * E * sin(Mp + M) + c[6] * E * E * sin(2 * M)
+                - 0.00111 * sin(Mp - 2 * F) - 0.00057 * sin(Mp + 2 * F) + 0.00056 * E * sin(2 * Mp + M)
+                - 0.00042 * sin(3 * Mp) + 0.00042 * E * sin(M + 2 * F) + 0.00038 * E * sin(M - 2 * F)
+                - 0.00024 * E * sin(2 * Mp - M) - 0.00017 * sin(omega);
+        } else {
+            jde += -0.62801 * sin(Mp) + 0.17172 * E * sin(M) - 0.01183 * E * sin(Mp + M) + 0.00862 * sin(2 * Mp)
+                + 0.00804 * sin(2 * F) + 0.00454 * E * sin(Mp - M) + 0.00204 * E * E * sin(2 * M)
+                - 0.00180 * sin(Mp - 2 * F) - 0.00070 * sin(Mp + 2 * F) - 0.00040 * sin(3 * Mp)
+                - 0.00034 * E * sin(2 * Mp - M) + 0.00032 * E * sin(M + 2 * F) + 0.00032 * E * sin(M - 2 * F)
+                - 0.00028 * E * E * sin(Mp + 2 * M) + 0.00027 * E * sin(2 * Mp + M) - 0.00017 * sin(omega);
+            const W = 0.00306 - 0.00038 * E * cos(M) + 0.00026 * cos(Mp) - 0.00002 * cos(Mp - M)
+                + 0.00002 * cos(Mp + M) + 0.00002 * cos(2 * F);
+            jde += quarter === 1 ? W : -W;
+        }
+        return (jde - 2440587.5) * 86400000; // dia juliano → milissegundos (ΔT de ~1 min ignorado)
+    }
+
+    const moonBadge = document.querySelector('[data-moon]');
+    if (moonBadge) {
+        const now = Date.now();
+        const endOfToday = new Date(now).setHours(23, 59, 59, 999);
+        const near = Math.floor((now - Date.UTC(2000, 0, 6, 18, 14)) / (29.530588861 * 86400000));
+        const events = [];
+        for (let lunation = near - 1; lunation <= near + 1; lunation += 1) {
+            for (let quarter = 0; quarter < 4; quarter += 1) events.push({ quarter, time: moonPhaseTime(lunation, quarter) });
+        }
+        // Como nos calendários brasileiros: a fase vale a partir do DIA em que acontece
+        const current = events.filter((event) => event.time <= endOfToday).pop();
+        const names = ['Lua Nova', 'Lua Crescente', 'Lua Cheia', 'Lua Minguante'];
+        moonBadge.querySelector('[data-moon-name]').textContent = names[current.quarter];
+
+        // Desenho pela posição real dentro da lunação (0 = nova, 0,5 = cheia)
+        const newMoons = events.filter((event) => event.quarter === 0);
+        const previous = newMoons.filter((event) => event.time <= now).pop();
+        const next = newMoons.find((event) => event.time > now);
+        const cycle = (now - previous.time) / (next.time - previous.time);
+
+        // Parte iluminada: no hemisfério sul, a lua crescente aparece iluminada à esquerda
+        const r = 9;
+        const k = Math.cos(2 * Math.PI * cycle);
+        const litLeft = cycle < 0.5;
+        const rx = (Math.abs(k) * r).toFixed(2);
+        const outer = litLeft ? 0 : 1;
+        const inner = (k > 0) === litLeft ? 1 : 0;
+        moonBadge.querySelector('[data-moon-lit]').setAttribute('d', `M12 3A${r} ${r} 0 0 ${outer} 12 21A${rx} ${r} 0 0 ${inner} 12 3Z`);
+        moonBadge.hidden = false;
+    }
+
+    // =====================================================
+    // 17. Poeira estelar: rastro do mouse e estrelas no toque
+    // =====================================================
+    if (!reduceMotion && document.body.animate) {
+        let alive = 0;
+        let last = 0;
+        const spawn = (x, y, dx, dy, size, life) => {
+            if (alive > 22) return;
+            alive += 1;
+            const el = document.createElement('span');
+            el.className = 'stardust';
+            el.innerHTML = '<svg aria-hidden="true"><use href="#twinkle"/></svg>';
+            el.style.left = `${x}px`;
+            el.style.top = `${y}px`;
+            document.body.append(el);
+            el.animate([
+                { transform: `translate(0, 0) scale(${size}) rotate(0deg)`, opacity: 0.95 },
+                { transform: `translate(${dx}px, ${dy}px) scale(0) rotate(120deg)`, opacity: 0 },
+            ], { duration: life, easing: 'cubic-bezier(0.2, 0.7, 0.3, 1)' }).onfinish = () => {
+                el.remove();
+                alive -= 1;
+            };
+        };
+
+        if (finePointer) {
+            window.addEventListener('pointermove', (event) => {
+                if (event.pointerType !== 'mouse') return;
+                const now = performance.now();
+                if (now - last < 50) return;
+                last = now;
+                spawn(event.clientX, event.clientY, (Math.random() - 0.5) * 18, 14 + Math.random() * 18, 0.5 + Math.random() * 0.6, 700);
+            }, { passive: true });
+        } else {
+            // No celular: um punhado de estrelas onde a pessoa toca
+            document.addEventListener('click', (event) => {
+                if (!event.clientX && !event.clientY) return; // clique via teclado
+                for (let i = 0; i < 6; i += 1) {
+                    const angle = (Math.PI * 2 * i) / 6 + Math.random() * 0.5;
+                    const dist = 22 + Math.random() * 18;
+                    spawn(event.clientX, event.clientY, Math.cos(angle) * dist, Math.sin(angle) * dist, 0.6 + Math.random() * 0.5, 650);
+                }
+            });
+        }
+    }
+
+    // =====================================================
+    // 18. Compartilhar (menu nativo do celular ou WhatsApp)
+    // =====================================================
+    async function shareText(text, hash = '') {
+        const url = `${location.origin}${location.pathname}${hash}`;
+        if (navigator.share) {
+            try {
+                await navigator.share({ title: 'Noctun Tarot', text, url });
+            } catch {
+                // a pessoa cancelou o compartilhamento
+            }
+            return;
+        }
+        window.open(`https://wa.me/?text=${encodeURIComponent(`${text} ${url}`)}`, '_blank', 'noopener');
+    }
+
+    const oracleShare = document.querySelector('[data-share="oracle"]');
+    if (oracleShare) {
+        oracleShare.addEventListener('click', () => {
+            const arcanum = dailyArcanum();
+            shareText(`Minha carta do dia na Noctun Tarot é ${arcanum.name} (${arcanum.keys.join(', ')}) ✨ Tire a sua:`);
+        });
+    }
+
+    // =====================================================
+    // 19. Seu arcano: data de nascimento → arcano de nascimento + carta do signo
+    // =====================================================
+    // Carta regente de cada signo (correspondência tradicional da Golden Dawn)
+    const SIGNS = [
+        { name: 'Capricórnio', from: 1222, arcanum: 15 },
+        { name: 'Aquário', from: 120, arcanum: 17 },
+        { name: 'Peixes', from: 219, arcanum: 18 },
+        { name: 'Áries', from: 321, arcanum: 4 },
+        { name: 'Touro', from: 420, arcanum: 5 },
+        { name: 'Gêmeos', from: 521, arcanum: 6 },
+        { name: 'Câncer', from: 621, arcanum: 7 },
+        { name: 'Leão', from: 723, arcanum: 8 },
+        { name: 'Virgem', from: 823, arcanum: 9 },
+        { name: 'Libra', from: 923, arcanum: 11 },
+        { name: 'Escorpião', from: 1023, arcanum: 13 },
+        { name: 'Sagitário', from: 1122, arcanum: 14 },
+    ];
+
+    function signOf(day, month) {
+        const value = month * 100 + day;
+        if (value >= 1222 || value < 120) return SIGNS[0];
+        return SIGNS.slice(1).filter((sign) => value >= sign.from).pop();
+    }
+
+    // Arcano de nascimento: soma dia + mês + ano e reduz os dígitos até chegar a 22 ou menos (22 = O Louco)
+    function birthArcanum(day, month, year) {
+        let n = day + month + year;
+        while (n > 22) n = String(n).split('').reduce((sum, digit) => sum + Number(digit), 0);
+        return n === 22 ? 0 : n;
+    }
+
+    function parseBirth(value) {
+        const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(value || '');
+        if (!match) return null;
+        const [day, month, year] = match.slice(1).map(Number);
+        const date = new Date(year, month - 1, day);
+        if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) return null;
+        if (year < 1900 || date > new Date()) return null;
+        return { day, month, year };
+    }
+
+    function birthError(value) {
+        const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(value);
+        if (!match) return 'Use o formato dd/mm/aaaa (ex.: 23/07/1998).';
+        const [day, month, year] = match.slice(1).map(Number);
+        const date = new Date(year, month - 1, day);
+        if (date.getMonth() !== month - 1 || date.getDate() !== day) return 'Essa data não existe no calendário. Confira o dia e o mês.';
+        if (year < 1900) return 'Confira o ano de nascimento (ex.: 1998).';
+        return 'Essa data ainda não chegou. Confira o ano.';
+    }
+
+    function savedBirth() {
+        try {
+            const value = localStorage.getItem(BIRTH_KEY);
+            return parseBirth(value) ? value : '';
+        } catch {
+            return '';
+        }
+    }
+
+    function labelCta(btn) {
+        const product = catalog.get(btn.dataset.id);
+        if (!product) return;
+        btn.querySelector('span').textContent = `${btn.dataset.cta} · ${shortPrice(product.price)}`;
+        btn.setAttribute('aria-label', `${btn.dataset.cta}: adicionar ${product.name} ao pedido por ${formatBRL(product.price)}`);
+    }
+
+    const arcanoForm = document.querySelector('[data-arcano-form]');
+    if (arcanoForm) {
+        const input = arcanoForm.querySelector('[data-arcano-input]');
+        const error = arcanoForm.querySelector('[data-arcano-error]');
+        const result = document.querySelector('[data-arcano-result]');
+        const label = arcanoForm.querySelector('.arcano-label');
+        const help = arcanoForm.querySelector('.arcano-help');
+        const ownTexts = { label: label.textContent, help: help.textContent };
+        // Consultar a data de outra pessoa não troca a data que vai no pedido
+        let forOther = false;
+
+        function setMode(other) {
+            forOther = other;
+            label.textContent = other ? 'Data de nascimento da outra pessoa' : ownTexts.label;
+            help.textContent = other ? 'Essa consulta não muda a data que vai no seu pedido.' : ownTexts.help;
+        }
+
+        // Máscara dd/mm/aaaa enquanto digita, sem jogar o cursor para o fim ao corrigir no meio
+        input.addEventListener('input', () => {
+            const caret = input.selectionStart ?? input.value.length;
+            const digitsBefore = input.value.slice(0, caret).replace(/\D/g, '').length;
+            const digits = input.value.replace(/\D/g, '').slice(0, 8);
+            const formatted = [digits.slice(0, 2), digits.slice(2, 4), digits.slice(4, 8)].filter(Boolean).join('/');
+            input.value = formatted;
+            let pos = 0;
+            for (let seen = 0; pos < formatted.length && seen < digitsBefore; pos += 1) {
+                if (formatted[pos] !== '/') seen += 1;
+            }
+            if (document.activeElement === input) input.setSelectionRange(pos, pos);
+            if (!error.hidden) {
+                error.hidden = true;
+                input.removeAttribute('aria-invalid');
+            }
+        });
+
+        function pickBlock(tag, arcanum) {
+            const block = make('div', 'arcano-pick');
+            const card = make('div', 'quiz-card');
+            const inner = make('div', 'quiz-card-inner');
+            const front = make('div', 'quiz-card-face quiz-card-front');
+            front.append(svgIcon(arcanum.glyph), make('span', 'quiz-card-name', arcanum.name));
+            const back = make('div', 'quiz-card-face quiz-card-back');
+            back.append(svgIcon('card-back'));
+            inner.append(front, back);
+            card.append(inner);
+            const body = make('div');
+            body.append(
+                make('p', 'arcano-tag', tag),
+                make('h3', 'arcano-name', arcanum.name),
+                make('p', 'arcano-keys', arcanum.keys.join(' · ')),
+                make('p', 'arcano-meaning', arcanum.meaning),
+            );
+            block.append(card, body);
+            return block;
+        }
+
+        function reveal(birth, interactive) {
+            const born = ARCANA[birthArcanum(birth.day, birth.month, birth.year)];
+            const sign = signOf(birth.day, birth.month);
+            const ruler = ARCANA[sign.arcanum];
+
+            const cards = make('div', 'arcano-cards');
+            if (born === ruler) {
+                cards.classList.add('arcano-cards--single');
+                cards.append(pickBlock(`Nascimento e signo de ${sign.name}`, born));
+            } else {
+                cards.append(pickBlock('Arcano de nascimento', born), pickBlock(`Carta do seu signo · ${sign.name}`, ruler));
+            }
+
+            const actions = make('div', 'arcano-actions');
+            const ask = make('button', 'btn btn-gold btn-shine');
+            ask.type = 'button';
+            ask.dataset.add = '';
+            ask.dataset.id = 'pergunta-objetiva';
+            ask.dataset.cta = 'Fazer uma pergunta';
+            ask.append(svgIcon('i-plus'), make('span'));
+            labelCta(ask);
+
+            const share = make('button', 'btn btn-ghost');
+            share.type = 'button';
+            share.append(svgIcon('i-share'), make('span', '', 'Compartilhar'));
+            share.addEventListener('click', () => shareText(
+                forOther
+                    ? `Descobri o arcano de nascimento de alguém especial: ${born.name} ✨ Descubra o seu na Noctun Tarot:`
+                    : `Meu arcano de nascimento é ${born.name}${born === ruler ? '' : ` e a carta do meu signo (${sign.name}) é ${ruler.name}`} ✨ Descubra o seu na Noctun Tarot:`,
+                '#arcano',
+            ));
+
+            const again = make('button', 'quiz-link');
+            again.type = 'button';
+            again.append(svgIcon('i-shuffle'), document.createTextNode('Ver de outra pessoa'));
+            again.addEventListener('click', () => {
+                setMode(true);
+                result.replaceChildren();
+                input.value = '';
+                input.focus();
+            });
+            actions.append(ask, share, again);
+
+            const mine = savedBirth();
+            if (forOther && mine) {
+                const back = make('button', 'quiz-link quiz-link--back');
+                back.type = 'button';
+                back.append(svgIcon('i-arrow'), document.createTextNode('Minha data'));
+                back.addEventListener('click', () => {
+                    setMode(false);
+                    input.value = mine;
+                    reveal(parseBirth(mine), false);
+                    input.focus();
+                });
+                actions.append(back);
+            }
+            result.replaceChildren(
+                cards,
+                actions,
+                make('p', 'arcano-note', 'Significados gerais das cartas. Na leitura, o Guilherme relaciona o seu arcano com a sua pergunta.'),
+            );
+
+            if (interactive) {
+                haptic(14);
+                setTimeout(() => cards.querySelectorAll('.quiz-card').forEach((card) => burst(card, { count: 9, distance: 55, className: 'spark spark--center' })), reduceMotion ? 0 : 1000);
+                if (result.getBoundingClientRect().bottom > window.innerHeight) {
+                    cards.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' });
+                }
+            }
+        }
+
+        arcanoForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const value = input.value.trim();
+            const birth = parseBirth(value);
+            if (!birth) {
+                // tira da tela o resultado da data anterior para não parecer a resposta desta
+                result.replaceChildren();
+                error.textContent = birthError(value);
+                error.hidden = false;
+                input.setAttribute('aria-invalid', 'true');
+                input.focus();
+                haptic([18, 60, 18]);
+                return;
+            }
+            if (!forOther) {
+                try {
+                    localStorage.setItem(BIRTH_KEY, value);
+                } catch {
+                    // sem armazenamento: o resultado aparece mesmo assim
+                }
+            }
+            reveal(birth, true);
+        });
+
+        // Quem já informou a data vê o resultado direto (sem roubar o foco)
+        const previous = savedBirth();
+        if (previous) {
+            input.value = previous;
+            reveal(parseBirth(previous), false);
+        }
+    }
 
     document.querySelectorAll('[data-year]').forEach((el) => {
         el.textContent = String(new Date().getFullYear());

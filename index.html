@@ -25,6 +25,8 @@
          remove a classe para o conteúdo nunca ficar escondido. -->
     <script>
         document.documentElement.classList.add('js');
+        var hora = new Date().getHours();
+        if (hora >= 18 || hora < 6) document.documentElement.classList.add('is-night');
         setTimeout(function () {
             if (!('ready' in document.documentElement.dataset)) document.documentElement.classList.remove('js');
         }, 3000);
@@ -116,6 +118,23 @@
             </g>
         </symbol>
 
+        <!-- Glifos dos demais Arcanos Maiores (tiragens aleatórias e carta do dia) -->
+        <symbol id="g-louco" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="6.4" r="2.5"/><circle cx="15.4" cy="9.8" r="2.5"/><circle cx="12" cy="13.2" r="2.5"/><circle cx="8.6" cy="9.8" r="2.5"/><path d="M12 15.7V21.5M12 18.6c2.2-.2 3.6-1.4 4.2-3.4-2.1.1-3.6 1.2-4.2 3.4z"/></g><circle cx="12" cy="9.8" r="1.4" fill="currentColor"/></symbol>
+        <symbol id="g-mago" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5.6C10.8 4 7.8 4 7.8 5.6S10.8 7.2 12 5.6 16.2 4 16.2 5.6 13.2 7.2 12 5.6Z"/><path d="M12 9.5v12M10.2 9.5h3.6M10.2 21.5h3.6"/><path d="M8.6 13.4l-2.2-1.1M15.4 13.4l2.2-1.1M8.6 17.2l-2.2.9M15.4 17.2l2.2.9"/></g></symbol>
+        <symbol id="g-sacerdotisa" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"><rect x="4.5" y="5" width="3" height="15.5" rx=".6"/><rect x="16.5" y="5" width="3" height="15.5" rx=".6"/><path d="M3.8 5h4.4M15.8 5h4.4"/></g><path fill="currentColor" d="M11.12 9.11A3.5 3.5 0 1 0 14.8 13.44A2.9 2.9 0 0 1 11.12 9.11Z"/></symbol>
+        <symbol id="g-imperatriz" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><circle cx="12" cy="9" r="4.6"/><path d="M12 13.6v7.9M8.8 17.8h6.4"/><path d="M9.2 3.6l1.4 1.2L12 3l1.4 1.8 1.4-1.2" stroke-linejoin="round"/></g></symbol>
+        <symbol id="g-imperador" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V11.5C12 7 9.8 4.8 7.6 5.2 5.6 5.6 5 8.2 6.6 9.8"/><path d="M12 11.5C12 7 14.2 4.8 16.4 5.2c2 .4 2.6 3 1 4.6"/><path d="M8.5 21h7"/></g></symbol>
+        <symbol id="g-hierofante" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><path d="M12 3v18.5M10 6.2h4M8.5 9.6h7M7 13h10"/><path d="M9.5 21.5h5"/></g></symbol>
+        <symbol id="g-enamorados" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" d="M12 20s-7.2-4.6-7.2-10.2A3.9 3.9 0 0 1 12 7.6a3.9 3.9 0 0 1 7.2 2.2C19.2 15.4 12 20 12 20Z"/><path fill="currentColor" d="M12 2.4l.5 1.6 1.6.5-1.6.5-.5 1.6-.5-1.6-1.6-.5 1.6-.5z"/></symbol>
+        <symbol id="g-carro" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2L12.49 4.11L14.6 4.6L12.49 5.09L12 7.2L11.51 5.09L9.4 4.6L11.51 4.11Z"/><g fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"><path d="M6 9.2h12M7 9.2V16h10V9.2"/><circle cx="8.6" cy="18.4" r="2.2"/><circle cx="15.4" cy="18.4" r="2.2"/></g></symbol>
+        <symbol id="g-eremita" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M10.2 3.6h3.6"/><path d="M8.6 6.4h6.8l-1.1 8.4H9.7z"/><path d="M9.2 17.6h5.6M12 14.8v2.8M12 17.6v3.9"/></g><path fill="currentColor" d="M12 8.5L12.42 10.18L14.1 10.6L12.42 11.02L12 12.7L11.58 11.02L9.9 10.6L11.58 10.18Z"/></symbol>
+        <symbol id="g-roda" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><circle cx="12" cy="12" r="8.2"/><circle cx="12" cy="12" r="2.6"/><path d="M14.4 12.99L19.58 15.14M12.99 14.4L15.14 19.58M11.01 14.4L8.86 19.58M9.6 12.99L4.42 15.14M9.6 11.01L4.42 8.86M11.01 9.6L8.86 4.42M12.99 9.6L15.14 4.42M14.4 11.01L19.58 8.86"/></g></symbol>
+        <symbol id="g-enforcado" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 4h15M12 4v4.2"/><path d="M8 8.2h8l-4 7z"/><circle cx="12" cy="18.8" r="2.4"/></g></symbol>
+        <symbol id="g-morte" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 21.5L16.8 3.4"/><path d="M16.8 3.4C13.6 2.2 8.6 3 5.4 6.4c3.4-1 7.4-.5 10 1.6"/><path d="M4 18.5c1.6-.8 2.8-.6 3.8.4M20 18.5c-1.6-.8-2.8-.6-3.8.4" opacity=".8"/></g></symbol>
+        <symbol id="g-diabo" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"><path d="M12 21.1L7 5.72L20.08 15.23L3.92 15.23L17 5.72Z"/><circle cx="12" cy="12.6" r="9.6" stroke-dasharray="1 2.2"/></g></symbol>
+        <symbol id="g-torre" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.6 21.5V10h7.6v11.5M6.6 10h9.6l-1-2.4H7.6zM10.2 21.5v-3.2h2.4v3.2M10.4 13.2h2"/><path d="M19.6 2.6l-2.8 4.2h2.6l-2.2 4"/></g></symbol>
+        <symbol id="g-julgamento" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12.2h3l8.8-5.2v12.4l-8.8-5.2h-3z"/><path d="M18 8.4l2.6-1.6M18.6 13.2h3M18 18l2.6 1.6"/></g></symbol>
+
         <!-- Glifos dos arcanos usados nos diagramas de tiragem -->
         <symbol id="g-sun" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M17.8 12L21.4 12M17.02 14.9L20.14 16.7M14.9 17.02L16.7 20.14M12 17.8L12 21.4M9.1 17.02L7.3 20.14M6.98 14.9L3.86 16.7M6.2 12L2.6 12M6.98 9.1L3.86 7.3M9.1 6.98L7.3 3.86M12 6.2L12 2.6M14.9 6.98L16.7 3.86M17.02 9.1L20.14 7.3"/></g></symbol>
         <symbol id="g-moon" viewBox="0 0 24 24"><path fill="currentColor" d="M10.43 5.02A7.5 7.5 0 1 0 18.02 15.14A6.4 6.4 0 0 1 10.43 5.02Z"/></symbol>
@@ -136,6 +155,7 @@
         <symbol id="i-arrow" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 6l6 6-6 6"/></symbol>
         <symbol id="i-eye" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/></g></symbol>
         <symbol id="i-shuffle" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M3.5 7h3.2c2 0 3.2 1 4.4 3l1.6 2.7c1.2 2 2.4 3.3 4.4 3.3h3.4M3.5 17h3.2c1.3 0 2.3-.5 3.2-1.4M13.9 8.4c.9-.9 1.9-1.4 3.2-1.4h3.4M18 4.5 20.5 7 18 9.5M18 14.5l2.5 2.5-2.5 2.5"/></symbol>
+        <symbol id="i-share" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="M8.2 10.8l7.6-4.1M8.2 13.2l7.6 4.1"/></g></symbol>
         <symbol id="i-whatsapp" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2a8.8 8.8 0 0 0-7.6 13.2L3.2 20.8l4.5-1.2A8.8 8.8 0 1 0 12 3.2z"/><path d="M9.1 7.9c-.4 0-.9.3-1 .9-.3 1.4.3 3 1.8 4.6 1.6 1.6 3.4 2.4 4.8 2.2.6-.1 1-.6 1-1.1l.1-.8-2-1-.9.9c-.9-.4-2-1.4-2.5-2.4l.8-.9-.9-2.1z"/></g></symbol>
         <symbol id="i-instagram" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="3.8"/></g><circle cx="16.9" cy="7.1" r="1.1" fill="currentColor"/></symbol>
         <symbol id="i-tiktok" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M13.5 3.5v11.2a3.4 3.4 0 1 1-3.4-3.4M13.5 3.5c.4 2.6 2.4 4.6 5 4.8"/></symbol>
@@ -181,6 +201,10 @@
 
             <div class="container hero-grid">
                 <div class="hero-copy">
+                    <p class="moon-today" data-moon hidden>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" class="moon-dark"/><path class="moon-lit" data-moon-lit d=""/></svg>
+                        <span>Lua de hoje: <strong data-moon-name></strong></span>
+                    </p>
                     <p class="kicker hero-kicker" data-reveal><span>Leituras de Tarot</span><span class="sep"> &middot; </span><span>Velas e banhos</span></p>
                     <h1 data-reveal>Conecte-se com a <em>sabedoria</em> do invisível</h1>
                     <span class="rule" aria-hidden="true" data-reveal></span>
@@ -192,6 +216,11 @@
                             Tirar uma dúvida
                         </a>
                     </div>
+                    <a class="hero-quiz-link" href="#descubra" data-reveal>
+                        <svg aria-hidden="true"><use href="#twinkle"/></svg>
+                        Não sabe qual escolher? Descubra em poucos toques
+                        <svg aria-hidden="true"><use href="#i-arrow"/></svg>
+                    </a>
                     <ul class="hero-facts" data-reveal>
                         <li><strong>Até 3 dias</strong><span>para receber sua leitura</span></li>
                         <li><strong>PIX ou cartão</strong><span>com link de pagamento</span></li>
@@ -203,10 +232,11 @@
                     <svg class="hero-rays" aria-hidden="true"><use href="#rays"/></svg>
                     <svg class="hero-card hero-card--back" aria-hidden="true"><use href="#card-outline"/></svg>
                     <svg class="hero-card hero-card--front" aria-hidden="true"><use href="#card-outline"/></svg>
-                    <div class="arch">
+                    <button class="arch" type="button" data-shuffle aria-haspopup="dialog" aria-controls="carta-do-dia" aria-label="Tirar sua carta do dia">
                         <img src="assets/logo-noctun.webp" width="468" height="539" fetchpriority="high"
                              alt="Emblema da Noctun Tarot: lua crescente, estrela e um olho entre folhas">
-                    </div>
+                    </button>
+                    <span class="arch-hint" aria-hidden="true">toque e tire sua carta do dia</span>
                     <svg class="twinkle twinkle--1" aria-hidden="true"><use href="#twinkle"/></svg>
                     <svg class="twinkle twinkle--2" aria-hidden="true"><use href="#twinkle"/></svg>
                     <svg class="twinkle twinkle--3" aria-hidden="true"><use href="#twinkle"/></svg>
@@ -215,6 +245,38 @@
 
             <svg class="moon-divider" aria-hidden="true" data-reveal><use href="#moon-divider"/></svg>
         </section>
+
+        <!-- ============ QUIZ: QUAL LEITURA É PARA VOCÊ ============ -->
+        <section class="section section--tint" id="descubra" aria-labelledby="descubra-title">
+            <div class="container">
+                <header class="section-head" data-reveal>
+                    <h2 class="display" id="descubra-title">Descubra</h2>
+                    <span class="rule" aria-hidden="true"></span>
+                    <p class="kicker">Qual leitura é para você</p>
+                    <p class="section-intro">Responda algumas perguntas rápidas e veja a leitura que combina com o seu momento.</p>
+                </header>
+
+                <div class="quiz" data-quiz data-reveal>
+                    <div class="quiz-progress" data-quiz-progress aria-hidden="true"><span></span><span></span><span></span></div>
+                    <div class="quiz-stage" data-quiz-stage>
+                        <!-- Sem JavaScript, o quiz vira um atalho para o catálogo -->
+                        <p class="quiz-fallback">Veja todas as opções no <a href="#leituras">catálogo de leituras</a>.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ CATÁLOGO (barra de categorias fixa enquanto navega) ============ -->
+        <div class="catalog" data-catalog>
+            <nav class="catbar" aria-label="Categorias do catálogo" data-catbar>
+                <div class="catbar-track" data-catbar-track>
+                    <a class="catbar-chip" href="#perguntas">Perguntas</a>
+                    <a class="catbar-chip" href="#consultas">Consultas</a>
+                    <a class="catbar-chip" href="#metodos">Tiragens</a>
+                    <a class="catbar-chip" href="#velas-aromaticas">Velas</a>
+                    <a class="catbar-chip" href="#banhos">Banhos</a>
+                </div>
+            </nav>
 
         <!-- ============ LEITURAS E CONSULTAS ============ -->
         <section class="section" id="leituras" aria-labelledby="leituras-title">
@@ -227,7 +289,7 @@
                 </header>
 
                 <div class="menu-grid">
-                    <article class="menu-group" data-reveal>
+                    <article class="menu-group" id="perguntas" data-reveal>
                         <header class="menu-head">
                             <svg class="menu-icon" aria-hidden="true"><use href="#twinkle"/></svg>
                             <div>
@@ -259,7 +321,7 @@
                         </ul>
                     </article>
 
-                    <article class="menu-group" data-reveal>
+                    <article class="menu-group" id="consultas" data-reveal>
                         <header class="menu-head">
                             <svg class="menu-icon" aria-hidden="true"><use href="#mark"/></svg>
                             <div>
@@ -393,12 +455,16 @@
                             <div class="board-info" aria-live="polite" data-board-info>
                                 <p class="board-info-kicker" data-info-kicker>Toque nas cartas</p>
                                 <p class="board-info-title" data-info-title>Revele cada posição da tiragem</p>
-                                <p class="board-info-text" data-info-text>Cartas ilustrativas: na sua leitura, elas são tiradas para você.</p>
+                                <p class="board-info-keys" data-info-keys hidden></p>
+                                <p class="board-info-text" data-info-text>Cada carta mostra seu significado geral. Na leitura, o Guilherme interpreta todas para a sua pergunta.</p>
                             </div>
                             <div class="board-actions">
                                 <p class="board-count"><span data-count>0</span> de 7 <span class="board-count-word">reveladas</span></p>
                                 <button class="chip-btn" type="button" data-reveal-all>
                                     <svg aria-hidden="true"><use href="#i-eye"/></svg><span>Revelar todas</span>
+                                </button>
+                                <button class="btn btn-gold board-cta" type="button" data-add data-id="templo-afrodite" data-cta="Pedir leitura">
+                                    <svg aria-hidden="true"><use href="#i-plus"/></svg><span>Pedir leitura</span>
                                 </button>
                             </div>
                         </div>
@@ -482,12 +548,16 @@
                             <div class="board-info" aria-live="polite" data-board-info>
                                 <p class="board-info-kicker" data-info-kicker>Toque nas cartas</p>
                                 <p class="board-info-title" data-info-title>Revele cada posição da tiragem</p>
-                                <p class="board-info-text" data-info-text>Cartas ilustrativas: na sua leitura, elas são tiradas para você.</p>
+                                <p class="board-info-keys" data-info-keys hidden></p>
+                                <p class="board-info-text" data-info-text>Cada carta mostra seu significado geral. Na leitura, o Guilherme interpreta todas para a sua pergunta.</p>
                             </div>
                             <div class="board-actions">
                                 <p class="board-count"><span data-count>0</span> de 6 <span class="board-count-word">reveladas</span></p>
                                 <button class="chip-btn" type="button" data-reveal-all>
                                     <svg aria-hidden="true"><use href="#i-eye"/></svg><span>Revelar todas</span>
+                                </button>
+                                <button class="btn btn-gold board-cta" type="button" data-add data-id="templo-diabo" data-cta="Pedir leitura">
+                                    <svg aria-hidden="true"><use href="#i-plus"/></svg><span>Pedir leitura</span>
                                 </button>
                             </div>
                         </div>
@@ -517,7 +587,7 @@
         </section>
 
         <!-- ============ VELAS & BANHOS ============ -->
-        <section class="section section--tint" id="velas" aria-labelledby="velas-title">
+        <section class="section" id="velas" aria-labelledby="velas-title">
             <svg class="corner corner--tr corner--soft" aria-hidden="true"><use href="#corner"/></svg>
 
             <div class="container">
@@ -563,7 +633,7 @@
                     </div>
                 </template>
 
-                <div class="shop-group">
+                <div class="shop-group" id="velas-aromaticas">
                     <header class="shop-head" data-reveal>
                         <h3>Velas aromáticas</h3>
                         <p>Essências: lavanda, camomila, alecrim, alfazema, jasmim e calêndula. Cores: branca, vermelha, rosa, roxa, lilás e preta, com mais cores em breve.</p>
@@ -625,7 +695,7 @@
                     <div class="rail-dots" data-rail-dots aria-hidden="true"></div>
                 </div>
 
-                <div class="shop-group">
+                <div class="shop-group" id="banhos">
                     <header class="shop-head" data-reveal>
                         <h3>Banhos de ervas</h3>
                         <p>Três banhos, R$ 12 cada.</p>
@@ -695,8 +765,38 @@
             </div>
         </section>
 
+        </div><!-- /catálogo -->
+
+        <!-- ============ SEU ARCANO (pela data de nascimento) ============ -->
+        <section class="section section--night" id="arcano" aria-labelledby="arcano-title">
+            <div class="starfield" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+            <div class="container">
+                <header class="section-head" data-reveal>
+                    <h2 class="display" id="arcano-title">Seu arcano</h2>
+                    <span class="rule" aria-hidden="true"></span>
+                    <p class="kicker">Pela data de nascimento</p>
+                    <p class="section-intro">Descubra a carta que acompanha você desde que nasceu e a carta regente do seu signo.</p>
+                </header>
+
+                <div class="arcano" data-arcano data-reveal>
+                    <form class="arcano-form" data-arcano-form novalidate>
+                        <label class="arcano-label" for="nascimento">Sua data de nascimento</label>
+                        <div class="arcano-row">
+                            <input class="arcano-input" id="nascimento" name="nascimento" type="text" inputmode="numeric"
+                                   autocomplete="bday" placeholder="dd/mm/aaaa" maxlength="10"
+                                   aria-describedby="nascimento-ajuda nascimento-erro" data-arcano-input>
+                            <button class="btn btn-gold btn-shine" type="submit">Revelar meu arcano</button>
+                        </div>
+                        <p class="arcano-help" id="nascimento-ajuda">Fica salva só neste aparelho e já vai preenchida no seu pedido.</p>
+                        <p class="arcano-error" id="nascimento-erro" role="alert" data-arcano-error hidden></p>
+                    </form>
+                    <div class="arcano-result" data-arcano-result aria-live="polite"></div>
+                </div>
+            </div>
+        </section>
+
         <!-- ============ QUEM SOU ============ -->
-        <section class="section" id="sobre" aria-labelledby="sobre-title">
+        <section class="section section--tint" id="sobre" aria-labelledby="sobre-title">
             <div class="container">
                 <header class="section-head" data-reveal>
                     <h2 class="display" id="sobre-title">Quem sou</h2>
@@ -725,7 +825,7 @@
         </section>
 
         <!-- ============ COMO FUNCIONA ============ -->
-        <section class="section section--tint" id="como-funciona" aria-labelledby="como-title">
+        <section class="section" id="como-funciona" aria-labelledby="como-title">
             <div class="container">
                 <header class="section-head" data-reveal>
                     <h2 class="display" id="como-title">Funcionamento</h2>
@@ -851,6 +951,43 @@
             <p class="drawer-note">Abriremos o WhatsApp com o pedido pronto. Lá você completa seus dados e combina o pagamento (PIX ou cartão).</p>
         </footer>
     </aside>
+
+    <!-- ============ CARTA DO DIA ============ -->
+    <div class="oracle-backdrop" data-oracle-close></div>
+    <div class="oracle" id="carta-do-dia" role="dialog" aria-modal="true" aria-labelledby="oracle-title" inert>
+        <button class="icon-btn oracle-close" type="button" data-oracle-close aria-label="Fechar carta do dia">
+            <svg aria-hidden="true"><use href="#i-close"/></svg>
+        </button>
+        <p class="kicker oracle-kicker">Sua carta do dia</p>
+        <div class="oracle-card" data-oracle-card>
+            <div class="oracle-card-inner">
+                <div class="oracle-face oracle-front">
+                    <span class="oracle-num" data-oracle-num></span>
+                    <svg aria-hidden="true"><use data-oracle-glyph href="#g-star"/></svg>
+                    <span class="oracle-card-name" data-oracle-card-name></span>
+                </div>
+                <div class="oracle-face oracle-back" aria-hidden="true"><svg><use href="#card-back"/></svg></div>
+            </div>
+        </div>
+        <div class="oracle-text">
+            <h2 class="oracle-name" id="oracle-title" data-oracle-name></h2>
+            <ul class="oracle-keys" data-oracle-keys aria-label="Palavras-chave"></ul>
+            <p class="oracle-meaning" data-oracle-meaning></p>
+            <p class="oracle-note">Este é o significado geral da carta, um convite à reflexão. Para olhar de perto a <em>sua</em> situação, faça uma pergunta ao Guilherme.</p>
+            <div class="oracle-actions">
+                <button class="btn btn-gold btn-shine" type="button" data-add data-id="pergunta-objetiva" data-cta="Fazer uma pergunta">
+                    <svg aria-hidden="true"><use href="#i-plus"/></svg><span>Fazer uma pergunta</span>
+                </button>
+                <a class="btn btn-ghost" href="#descubra" data-oracle-close>Qual leitura é para mim?</a>
+            </div>
+            <p class="oracle-foot">
+                Uma carta por dia. Volte amanhã para tirar a próxima.
+                <button class="share-link" type="button" data-share="oracle">
+                    <svg aria-hidden="true"><use href="#i-share"/></svg>Compartilhar
+                </button>
+            </p>
+        </div>
+    </div>
 
     <div class="toast-region" aria-live="polite" aria-atomic="true" data-toasts></div>
 
