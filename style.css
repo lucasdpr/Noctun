@@ -3510,6 +3510,7 @@ button.arch:focus-visible {
     align-items: center;
     gap: clamp(1.4rem, 4vw, 2.6rem);
     width: min(760px, calc(100% - 32px));
+    max-height: calc(100vh - 32px);
     max-height: calc(100dvh - 32px);
     overflow-y: auto;
     padding: clamp(1.6rem, 4vw, 2.6rem);
@@ -3752,6 +3753,7 @@ button.arch:focus-visible {
         bottom: 0;
         left: 0;
         width: 100%;
+        max-height: 94vh;
         max-height: 94dvh;
         grid-template-columns: 1fr;
         justify-items: center;

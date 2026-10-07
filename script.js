@@ -32,7 +32,7 @@
 
     // =====================================================
     // 1. Catálogo (fonte única: os botões do HTML)
-    //    data-kind="produto" → vela/banho; sem ele → leitura/trabalho
+    //    data-kind="produto" → vela/banho; sem ele → leitura
     //    data-price-from     → preço "a partir de" (varia com as opções)
     //    data-options        → opções obrigatórias (ex.: "essencia cor")
     // =====================================================
@@ -159,7 +159,7 @@
     const itemCount = () => state.items.reduce((sum, item) => sum + item.qty, 0);
     const hasService = () => state.items.some(isService);
     const hasVariablePrice = () => state.items.some((item) => catalog.get(item.id).from);
-    // "Furar fila" vale para a fila de leituras: só conta se houver leitura/trabalho no pedido
+    // "Furar fila" vale para a fila de leituras: só conta se houver leitura no pedido
     const rushActive = () => state.rush && hasService();
     const orderTotal = () =>
         lineItems().reduce((sum, item) => sum + item.total, 0) + (rushActive() ? RUSH.price : 0);
@@ -424,8 +424,10 @@
         drawer.classList.remove('is-open');
         backdrop.classList.remove('is-open');
         drawer.inert = true;
-        pageRegions.forEach((el) => { el.inert = false; });
-        document.body.classList.remove('no-scroll');
+        if (!isOracleOpen()) {
+            pageRegions.forEach((el) => { el.inert = false; });
+            document.body.classList.remove('no-scroll');
+        }
 
         if (restoreFocus && lastFocus && document.contains(lastFocus)) {
             lastFocus.focus({ preventScroll: true });
@@ -445,7 +447,7 @@
 
         const lines = ['Olá, Guilherme! 🔮 Vim pelo site e gostaria de fazer este pedido:', ''];
         if (services.length && products.length) {
-            lines.push('*Leituras e trabalhos:*', ...services.map(line), ...rushLine, '', '*Velas e banhos:*', ...products.map(line));
+            lines.push('*Leituras:*', ...services.map(line), ...rushLine, '', '*Velas e banhos:*', ...products.map(line));
         } else {
             lines.push(...items.map(line), ...rushLine);
         }
@@ -843,8 +845,11 @@
                 showCard(card);
                 sparkle(card);
             } else if (card.classList.contains('is-current')) {
-                setCurrent(null);
-                showInfo(...defaults);
+                // volta para a última carta que continua aberta; sem nenhuma, mostra a instrução inicial
+                const still = cards.filter(isFlipped).pop();
+                setCurrent(still || null);
+                if (still) showCard(still);
+                else showInfo(...defaults);
             }
             update();
         }
@@ -1193,6 +1198,8 @@
                 }
             };
             if (interactive && old && old.classList.contains('quiz-step') && !reduceMotion) {
+                // o passo que está saindo não aceita mais cliques (evita voltar duas vezes)
+                old.querySelectorAll('button').forEach((b) => { b.disabled = true; });
                 old.classList.add('is-leaving');
                 setTimeout(put, 200);
             } else {
@@ -1207,6 +1214,7 @@
                 back.type = 'button';
                 back.append(svgIcon('i-arrow'), document.createTextNode('Voltar'));
                 back.addEventListener('click', () => {
+                    if (!history.length) return;
                     current = history.pop();
                     renderStep(current, true);
                 });
@@ -1227,7 +1235,8 @@
         }
 
         function choose(button, option) {
-            stage.querySelectorAll('.quiz-option').forEach((b) => { b.disabled = true; });
+            // trava o passo inteiro (opções e Voltar) até a próxima tela entrar
+            stage.querySelectorAll('button').forEach((b) => { b.disabled = true; });
             button.classList.add('is-picked');
             haptic(10);
             setTimeout(() => {
@@ -1339,13 +1348,31 @@
             }
         };
 
+        // Depois de um clique, o chip escolhido fica travado até a rolagem terminar
+        let locked = false;
+        let unlockTimer = 0;
+        const unlockLater = (ms) => {
+            clearTimeout(unlockTimer);
+            unlockTimer = setTimeout(() => { locked = false; }, ms);
+        };
+        window.addEventListener('scroll', () => { if (locked) unlockLater(160); }, { passive: true });
+
         const spy = new IntersectionObserver((entries) => {
             entries.forEach((entry) => visible.set(entry.target, entry.isIntersecting));
+            if (locked) return;
+            // Mantém o chip atual enquanto a seção dele estiver na faixa: no desktop,
+            // "Perguntas" e "Consultas" ficam lado a lado e entram na faixa juntas
+            const current = chips.indexOf(active);
+            if (current !== -1 && visible.get(targets[current])) return;
             const first = targets.findIndex((target) => visible.get(target));
             if (first !== -1) setActive(chips[first]);
         }, { rootMargin: '-150px 0px -50% 0px' });
         targets.forEach((target) => { if (target) spy.observe(target); });
-        chips.forEach((chip) => chip.addEventListener('click', () => setActive(chip)));
+        chips.forEach((chip) => chip.addEventListener('click', () => {
+            locked = true;
+            unlockLater(1000);
+            setActive(chip);
+        }));
     }
 
     // =====================================================
@@ -1358,6 +1385,7 @@
     const shuffleBtn = document.querySelector('[data-shuffle]');
     let oracleReturn = null;
     let oracleTimers = [];
+    let oracleOpenTimer = 0;
 
     const isOracleOpen = () => oracle.classList.contains('is-open');
 
@@ -1383,7 +1411,8 @@
     }
 
     function openOracle() {
-        if (isOracleOpen()) return;
+        // não abre por cima do pedido (a pessoa pode ter aberto o pedido durante o embaralhar)
+        if (isOracleOpen() || isCartOpen()) return;
         const arcanum = dailyArcanum();
         oracle.querySelector('[data-oracle-num]').textContent = arcanum.num;
         oracle.querySelector('[data-oracle-glyph]').setAttribute('href', `#${arcanum.glyph}`);
@@ -1411,13 +1440,16 @@
     }
 
     function closeOracle({ restoreFocus = true } = {}) {
+        clearTimeout(oracleOpenTimer);
         if (!isOracleOpen()) return;
         oracleTimers.forEach(clearTimeout);
         oracle.classList.remove('is-open', 'is-revealed');
         oracleBackdrop.classList.remove('is-open');
         oracle.inert = true;
-        pageRegions.forEach((el) => { el.inert = false; });
-        document.body.classList.remove('no-scroll');
+        if (!isCartOpen()) {
+            pageRegions.forEach((el) => { el.inert = false; });
+            document.body.classList.remove('no-scroll');
+        }
         if (restoreFocus && oracleReturn && document.contains(oracleReturn)) oracleReturn.focus({ preventScroll: true });
     }
 
@@ -1433,27 +1465,75 @@
             haptic(14);
             clearTimeout(shuffleTimer);
             shuffleTimer = setTimeout(() => art.classList.remove('is-shuffling'), 1050);
-            setTimeout(openOracle, reduceMotion ? 0 : 750);
+            clearTimeout(oracleOpenTimer);
+            oracleOpenTimer = setTimeout(openOracle, reduceMotion ? 0 : 750);
         });
     }
 
     // =====================================================
     // 16. Lua de hoje (fase calculada; desenho como visto no Brasil)
     // =====================================================
+    // Instante de uma fase principal: Meeus, "Astronomical Algorithms", cap. 49
+    // (termos periódicos principais; erro de poucos minutos).
+    // lunation: lunações desde jan/2000; quarter: 0 nova, 1 quarto crescente, 2 cheia, 3 quarto minguante
+    function moonPhaseTime(lunation, quarter) {
+        const k = lunation + quarter / 4;
+        const T = k / 1236.85;
+        const rad = Math.PI / 180;
+        const E = 1 - 0.002516 * T - 0.0000074 * T * T;
+        const M = (2.5534 + 29.1053567 * k - 0.0000014 * T * T) * rad;
+        const Mp = (201.5643 + 385.81693528 * k + 0.0107582 * T * T) * rad;
+        const F = (160.7108 + 390.67050284 * k - 0.0016118 * T * T) * rad;
+        const omega = (124.7746 - 1.56375588 * k + 0.0020672 * T * T) * rad;
+        const { sin, cos } = Math;
+        let jde = 2451550.09766 + 29.530588861 * k + 0.00015437 * T * T - 0.00000015 * T ** 3 + 0.00000000073 * T ** 4;
+
+        if (quarter % 2 === 0) {
+            const c = quarter === 0
+                ? [-0.40720, 0.17241, 0.01608, 0.01039, 0.00739, -0.00514, 0.00208]
+                : [-0.40614, 0.17302, 0.01614, 0.01043, 0.00734, -0.00515, 0.00209];
+            jde += c[0] * sin(Mp) + c[1] * E * sin(M) + c[2] * sin(2 * Mp) + c[3] * sin(2 * F)
+                + c[4] * E * sin(Mp - M) + c[5] * E * sin(Mp + M) + c[6] * E * E * sin(2 * M)
+                - 0.00111 * sin(Mp - 2 * F) - 0.00057 * sin(Mp + 2 * F) + 0.00056 * E * sin(2 * Mp + M)
+                - 0.00042 * sin(3 * Mp) + 0.00042 * E * sin(M + 2 * F) + 0.00038 * E * sin(M - 2 * F)
+                - 0.00024 * E * sin(2 * Mp - M) - 0.00017 * sin(omega);
+        } else {
+            jde += -0.62801 * sin(Mp) + 0.17172 * E * sin(M) - 0.01183 * E * sin(Mp + M) + 0.00862 * sin(2 * Mp)
+                + 0.00804 * sin(2 * F) + 0.00454 * E * sin(Mp - M) + 0.00204 * E * E * sin(2 * M)
+                - 0.00180 * sin(Mp - 2 * F) - 0.00070 * sin(Mp + 2 * F) - 0.00040 * sin(3 * Mp)
+                - 0.00034 * E * sin(2 * Mp - M) + 0.00032 * E * sin(M + 2 * F) + 0.00032 * E * sin(M - 2 * F)
+                - 0.00028 * E * E * sin(Mp + 2 * M) + 0.00027 * E * sin(2 * Mp + M) - 0.00017 * sin(omega);
+            const W = 0.00306 - 0.00038 * E * cos(M) + 0.00026 * cos(Mp) - 0.00002 * cos(Mp - M)
+                + 0.00002 * cos(Mp + M) + 0.00002 * cos(2 * F);
+            jde += quarter === 1 ? W : -W;
+        }
+        return (jde - 2440587.5) * 86400000; // dia juliano → milissegundos (ΔT de ~1 min ignorado)
+    }
+
     const moonBadge = document.querySelector('[data-moon]');
     if (moonBadge) {
-        const SYNODIC = 29.530588853;
-        const KNOWN_NEW_MOON = Date.UTC(2000, 0, 6, 18, 14);
-        const days = (Date.now() - KNOWN_NEW_MOON) / 86400000;
-        const age = ((days % SYNODIC) + SYNODIC) % SYNODIC;
-        // Como nos calendários brasileiros: cada fase vale ~7 dias a partir da data da fase
+        const now = Date.now();
+        const endOfToday = new Date(now).setHours(23, 59, 59, 999);
+        const near = Math.floor((now - Date.UTC(2000, 0, 6, 18, 14)) / (29.530588861 * 86400000));
+        const events = [];
+        for (let lunation = near - 1; lunation <= near + 1; lunation += 1) {
+            for (let quarter = 0; quarter < 4; quarter += 1) events.push({ quarter, time: moonPhaseTime(lunation, quarter) });
+        }
+        // Como nos calendários brasileiros: a fase vale a partir do DIA em que acontece
+        const current = events.filter((event) => event.time <= endOfToday).pop();
         const names = ['Lua Nova', 'Lua Crescente', 'Lua Cheia', 'Lua Minguante'];
-        moonBadge.querySelector('[data-moon-name]').textContent = names[Math.floor(age / (SYNODIC / 4)) % 4];
+        moonBadge.querySelector('[data-moon-name]').textContent = names[current.quarter];
+
+        // Desenho pela posição real dentro da lunação (0 = nova, 0,5 = cheia)
+        const newMoons = events.filter((event) => event.quarter === 0);
+        const previous = newMoons.filter((event) => event.time <= now).pop();
+        const next = newMoons.find((event) => event.time > now);
+        const cycle = (now - previous.time) / (next.time - previous.time);
 
         // Parte iluminada: no hemisfério sul, a lua crescente aparece iluminada à esquerda
         const r = 9;
-        const k = Math.cos((2 * Math.PI * age) / SYNODIC);
-        const litLeft = age < SYNODIC / 2;
+        const k = Math.cos(2 * Math.PI * cycle);
+        const litLeft = cycle < 0.5;
         const rx = (Math.abs(k) * r).toFixed(2);
         const outer = litLeft ? 0 : 1;
         const inner = (k > 0) === litLeft ? 1 : 0;
@@ -1509,8 +1589,8 @@
     // =====================================================
     // 18. Compartilhar (menu nativo do celular ou WhatsApp)
     // =====================================================
-    async function shareText(text) {
-        const url = `${location.origin}${location.pathname}`;
+    async function shareText(text, hash = '') {
+        const url = `${location.origin}${location.pathname}${hash}`;
         if (navigator.share) {
             try {
                 await navigator.share({ title: 'Noctun Tarot', text, url });
@@ -1572,6 +1652,16 @@
         return { day, month, year };
     }
 
+    function birthError(value) {
+        const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(value);
+        if (!match) return 'Use o formato dd/mm/aaaa (ex.: 23/07/1998).';
+        const [day, month, year] = match.slice(1).map(Number);
+        const date = new Date(year, month - 1, day);
+        if (date.getMonth() !== month - 1 || date.getDate() !== day) return 'Essa data não existe no calendário. Confira o dia e o mês.';
+        if (year < 1900) return 'Confira o ano de nascimento (ex.: 1998).';
+        return 'Essa data ainda não chegou. Confira o ano.';
+    }
+
     function savedBirth() {
         try {
             const value = localStorage.getItem(BIRTH_KEY);
@@ -1593,11 +1683,30 @@
         const input = arcanoForm.querySelector('[data-arcano-input]');
         const error = arcanoForm.querySelector('[data-arcano-error]');
         const result = document.querySelector('[data-arcano-result]');
+        const label = arcanoForm.querySelector('.arcano-label');
+        const help = arcanoForm.querySelector('.arcano-help');
+        const ownTexts = { label: label.textContent, help: help.textContent };
+        // Consultar a data de outra pessoa não troca a data que vai no pedido
+        let forOther = false;
 
-        // Máscara dd/mm/aaaa enquanto digita
+        function setMode(other) {
+            forOther = other;
+            label.textContent = other ? 'Data de nascimento da outra pessoa' : ownTexts.label;
+            help.textContent = other ? 'Essa consulta não muda a data que vai no seu pedido.' : ownTexts.help;
+        }
+
+        // Máscara dd/mm/aaaa enquanto digita, sem jogar o cursor para o fim ao corrigir no meio
         input.addEventListener('input', () => {
+            const caret = input.selectionStart ?? input.value.length;
+            const digitsBefore = input.value.slice(0, caret).replace(/\D/g, '').length;
             const digits = input.value.replace(/\D/g, '').slice(0, 8);
-            input.value = [digits.slice(0, 2), digits.slice(2, 4), digits.slice(4, 8)].filter(Boolean).join('/');
+            const formatted = [digits.slice(0, 2), digits.slice(2, 4), digits.slice(4, 8)].filter(Boolean).join('/');
+            input.value = formatted;
+            let pos = 0;
+            for (let seen = 0; pos < formatted.length && seen < digitsBefore; pos += 1) {
+                if (formatted[pos] !== '/') seen += 1;
+            }
+            if (document.activeElement === input) input.setSelectionRange(pos, pos);
             if (!error.hidden) {
                 error.hidden = true;
                 input.removeAttribute('aria-invalid');
@@ -1651,19 +1760,36 @@
             share.type = 'button';
             share.append(svgIcon('i-share'), make('span', '', 'Compartilhar'));
             share.addEventListener('click', () => shareText(
-                `Meu arcano de nascimento é ${born.name}${born === ruler ? '' : ` e a carta do meu signo (${sign.name}) é ${ruler.name}`} ✨ Descubra o seu na Noctun Tarot:`,
+                forOther
+                    ? `Descobri o arcano de nascimento de alguém especial: ${born.name} ✨ Descubra o seu na Noctun Tarot:`
+                    : `Meu arcano de nascimento é ${born.name}${born === ruler ? '' : ` e a carta do meu signo (${sign.name}) é ${ruler.name}`} ✨ Descubra o seu na Noctun Tarot:`,
+                '#arcano',
             ));
 
             const again = make('button', 'quiz-link');
             again.type = 'button';
-            again.append(svgIcon('i-shuffle'), document.createTextNode('Outra data'));
+            again.append(svgIcon('i-shuffle'), document.createTextNode('Ver de outra pessoa'));
             again.addEventListener('click', () => {
+                setMode(true);
                 result.replaceChildren();
                 input.value = '';
                 input.focus();
             });
-
             actions.append(ask, share, again);
+
+            const mine = savedBirth();
+            if (forOther && mine) {
+                const back = make('button', 'quiz-link quiz-link--back');
+                back.type = 'button';
+                back.append(svgIcon('i-arrow'), document.createTextNode('Minha data'));
+                back.addEventListener('click', () => {
+                    setMode(false);
+                    input.value = mine;
+                    reveal(parseBirth(mine), false);
+                    input.focus();
+                });
+                actions.append(back);
+            }
             result.replaceChildren(
                 cards,
                 actions,
@@ -1684,17 +1810,21 @@
             const value = input.value.trim();
             const birth = parseBirth(value);
             if (!birth) {
-                error.textContent = 'Confira a data: use o formato dd/mm/aaaa (ex.: 23/07/1998).';
+                // tira da tela o resultado da data anterior para não parecer a resposta desta
+                result.replaceChildren();
+                error.textContent = birthError(value);
                 error.hidden = false;
                 input.setAttribute('aria-invalid', 'true');
                 input.focus();
                 haptic([18, 60, 18]);
                 return;
             }
-            try {
-                localStorage.setItem(BIRTH_KEY, value);
-            } catch {
-                // sem armazenamento: o resultado aparece mesmo assim
+            if (!forOther) {
+                try {
+                    localStorage.setItem(BIRTH_KEY, value);
+                } catch {
+                    // sem armazenamento: o resultado aparece mesmo assim
+                }
             }
             reveal(birth, true);
         });
