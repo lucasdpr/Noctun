@@ -7,11 +7,25 @@
     <meta name="description" content="Leituras de Tarot com Guilherme: perguntas avulsas, consultas, métodos Templo de Afrodite e Templo do Diabo, velas aromáticas e banhos de ervas. Pedido direto pelo WhatsApp.">
     <meta name="theme-color" content="#f3f0e9">
 
+    <!-- Prévia ao compartilhar o link (WhatsApp, Instagram...). O domínio aparece em 4 lugares:
+         canonical, og:url, og:image e twitter:image. Se mudar o domínio, troque os 4.
+         A descrição cita "a partir de R$ 15": se o preço da Pergunta objetiva mudar, atualize aqui. -->
+    <link rel="canonical" href="https://noctun.vercel.app/">
     <meta property="og:type" content="website">
     <meta property="og:locale" content="pt_BR">
     <meta property="og:site_name" content="Noctun Tarot">
-    <meta property="og:title" content="Noctun Tarot | Leituras de Tarot, Velas e Banhos">
-    <meta property="og:description" content="Conecte-se com a sabedoria do invisível. Leituras claras e direcionadas ao autoconhecimento.">
+    <meta property="og:url" content="https://noctun.vercel.app/">
+    <meta property="og:title" content="Noctun Tarot · Leituras de Tarot com Guilherme">
+    <meta property="og:description" content="Perguntas a partir de R$ 15, consultas e os métodos Templo de Afrodite e Templo do Diabo. Velas e banhos de ervas. Pedido direto pelo WhatsApp.">
+    <meta property="og:image" content="https://noctun.vercel.app/assets/og-noctun.jpg">
+    <meta property="og:image:type" content="image/jpeg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Emblema da Noctun Tarot (lua crescente, estrela e um olho entre folhas) com o nome Noctun Tarot">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Noctun Tarot · Leituras de Tarot com Guilherme">
+    <meta name="twitter:description" content="Perguntas a partir de R$ 15, consultas e os métodos Templo de Afrodite e Templo do Diabo. Velas e banhos de ervas. Pedido direto pelo WhatsApp.">
+    <meta name="twitter:image" content="https://noctun.vercel.app/assets/og-noctun.jpg">
 
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
@@ -155,6 +169,7 @@
         <symbol id="i-arrow" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 6l6 6-6 6"/></symbol>
         <symbol id="i-eye" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/></g></symbol>
         <symbol id="i-shuffle" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M3.5 7h3.2c2 0 3.2 1 4.4 3l1.6 2.7c1.2 2 2.4 3.3 4.4 3.3h3.4M3.5 17h3.2c1.3 0 2.3-.5 3.2-1.4M13.9 8.4c.9-.9 1.9-1.4 3.2-1.4h3.4M18 4.5 20.5 7 18 9.5M18 14.5l2.5 2.5-2.5 2.5"/></symbol>
+        <symbol id="i-copy" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6.5a2 2 0 0 0-2-2h-7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2"/></g></symbol>
         <symbol id="i-share" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="M8.2 10.8l7.6-4.1M8.2 13.2l7.6 4.1"/></g></symbol>
         <symbol id="i-whatsapp" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2a8.8 8.8 0 0 0-7.6 13.2L3.2 20.8l4.5-1.2A8.8 8.8 0 1 0 12 3.2z"/><path d="M9.1 7.9c-.4 0-.9.3-1 .9-.3 1.4.3 3 1.8 4.6 1.6 1.6 3.4 2.4 4.8 2.2.6-.1 1-.6 1-1.1l.1-.8-2-1-.9.9c-.9-.4-2-1.4-2.5-2.4l.8-.9-.9-2.1z"/></g></symbol>
         <symbol id="i-instagram" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="3.8"/></g><circle cx="16.9" cy="7.1" r="1.1" fill="currentColor"/></symbol>
@@ -208,18 +223,17 @@
                     <p class="kicker hero-kicker" data-reveal><span>Leituras de Tarot</span><span class="sep"> &middot; </span><span>Velas e banhos</span></p>
                     <h1 data-reveal>Conecte-se com a <em>sabedoria</em> do invisível</h1>
                     <span class="rule" aria-hidden="true" data-reveal></span>
-                    <p class="lead" data-reveal>Leituras claras e direcionadas ao autoconhecimento, feitas com estudo contínuo, intuição e prática responsável.</p>
+                    <p class="lead" data-reveal>Leituras claras e direcionadas ao autoconhecimento, com pedido direto pelo WhatsApp.</p>
                     <div class="hero-actions" data-reveal>
-                        <a class="btn btn-gold btn-shine" href="#leituras">Ver leituras e valores</a>
-                        <a class="btn btn-ghost" href="https://wa.me/5524999894376?text=Ol%C3%A1%2C%20Guilherme!%20Vim%20pelo%20site%20da%20Noctun%20Tarot%20e%20gostaria%20de%20tirar%20uma%20d%C3%BAvida." target="_blank" rel="noopener">
-                            <svg aria-hidden="true"><use href="#i-whatsapp"/></svg>
-                            Tirar uma dúvida
+                        <a class="btn btn-gold btn-shine" href="#leituras" data-ritual-open>
+                            <svg aria-hidden="true"><use href="#twinkle"/></svg>
+                            Fazer minha pergunta
                         </a>
+                        <a class="btn btn-ghost" href="#leituras"><span>Ver leituras · a partir de <span data-min-price>R$ 15</span></span></a>
                     </div>
-                    <a class="hero-quiz-link" href="#descubra" data-reveal>
-                        <svg aria-hidden="true"><use href="#twinkle"/></svg>
-                        Não sabe qual escolher? Descubra em poucos toques
-                        <svg aria-hidden="true"><use href="#i-arrow"/></svg>
+                    <a class="hero-ask" href="https://wa.me/5524999894376?text=Ol%C3%A1%2C%20Guilherme!%20Vim%20pelo%20site%20da%20Noctun%20Tarot%20e%20gostaria%20de%20tirar%20uma%20d%C3%BAvida." target="_blank" rel="noopener" data-reveal>
+                        <svg aria-hidden="true"><use href="#i-whatsapp"/></svg>
+                        Tirar uma dúvida no WhatsApp
                     </a>
                     <ul class="hero-facts" data-reveal>
                         <li><strong>Até 3 dias</strong><span>para receber sua leitura</span></li>
@@ -361,6 +375,9 @@
                                 </button>
                             </li>
                         </ul>
+                        <a class="ask-link ask-link--row" href="https://wa.me/5524999894376?text=Ol%C3%A1%2C%20Guilherme!%20Vim%20pelo%20site%20da%20Noctun%20Tarot%20e%20gostaria%20de%20tirar%20uma%20d%C3%BAvida." target="_blank" rel="noopener" data-ask="as consultas">
+                            <svg aria-hidden="true"><use href="#i-whatsapp"/></svg>Dúvida sobre as consultas? Pergunte no WhatsApp
+                        </a>
                     </article>
                 </div>
 
@@ -456,14 +473,14 @@
                                 <p class="board-info-kicker" data-info-kicker>Toque nas cartas</p>
                                 <p class="board-info-title" data-info-title>Revele cada posição da tiragem</p>
                                 <p class="board-info-keys" data-info-keys hidden></p>
-                                <p class="board-info-text" data-info-text>Cada carta mostra seu significado geral. Na leitura, o Guilherme interpreta todas para a sua pergunta.</p>
+                                <p class="board-info-text" data-info-text>Sorteio ilustrativo, com significados gerais. Na sua leitura, o Guilherme interpreta cada posição para a sua pergunta.</p>
                             </div>
                             <div class="board-actions">
                                 <p class="board-count"><span data-count>0</span> de 7 <span class="board-count-word">reveladas</span></p>
                                 <button class="chip-btn" type="button" data-reveal-all>
                                     <svg aria-hidden="true"><use href="#i-eye"/></svg><span>Revelar todas</span>
                                 </button>
-                                <button class="btn btn-gold board-cta" type="button" data-add data-id="templo-afrodite" data-cta="Pedir leitura">
+                                <button class="btn btn-gold board-cta" type="button" data-add data-id="templo-afrodite" data-cta="Pedir leitura" data-then="pedido">
                                     <svg aria-hidden="true"><use href="#i-plus"/></svg><span>Pedir leitura</span>
                                 </button>
                             </div>
@@ -483,6 +500,9 @@
                                 <svg aria-hidden="true"><use href="#i-plus"/></svg><span>Adicionar ao pedido</span>
                             </button>
                         </div>
+                        <a class="ask-link" href="https://wa.me/5524999894376?text=Ol%C3%A1%2C%20Guilherme!%20Vim%20pelo%20site%20da%20Noctun%20Tarot%20e%20gostaria%20de%20tirar%20uma%20d%C3%BAvida." target="_blank" rel="noopener" data-ask="o Templo de Afrodite">
+                            <svg aria-hidden="true"><use href="#i-whatsapp"/></svg>Dúvida sobre esta tiragem? Pergunte no WhatsApp
+                        </a>
                     </div>
                 </article>
 
@@ -549,14 +569,14 @@
                                 <p class="board-info-kicker" data-info-kicker>Toque nas cartas</p>
                                 <p class="board-info-title" data-info-title>Revele cada posição da tiragem</p>
                                 <p class="board-info-keys" data-info-keys hidden></p>
-                                <p class="board-info-text" data-info-text>Cada carta mostra seu significado geral. Na leitura, o Guilherme interpreta todas para a sua pergunta.</p>
+                                <p class="board-info-text" data-info-text>Sorteio ilustrativo, com significados gerais. Na sua leitura, o Guilherme interpreta cada posição para a sua pergunta.</p>
                             </div>
                             <div class="board-actions">
                                 <p class="board-count"><span data-count>0</span> de 6 <span class="board-count-word">reveladas</span></p>
                                 <button class="chip-btn" type="button" data-reveal-all>
                                     <svg aria-hidden="true"><use href="#i-eye"/></svg><span>Revelar todas</span>
                                 </button>
-                                <button class="btn btn-gold board-cta" type="button" data-add data-id="templo-diabo" data-cta="Pedir leitura">
+                                <button class="btn btn-gold board-cta" type="button" data-add data-id="templo-diabo" data-cta="Pedir leitura" data-then="pedido">
                                     <svg aria-hidden="true"><use href="#i-plus"/></svg><span>Pedir leitura</span>
                                 </button>
                             </div>
@@ -581,6 +601,9 @@
                                 <svg aria-hidden="true"><use href="#i-plus"/></svg><span>Adicionar ao pedido</span>
                             </button>
                         </div>
+                        <a class="ask-link" href="https://wa.me/5524999894376?text=Ol%C3%A1%2C%20Guilherme!%20Vim%20pelo%20site%20da%20Noctun%20Tarot%20e%20gostaria%20de%20tirar%20uma%20d%C3%BAvida." target="_blank" rel="noopener" data-ask="o Templo do Diabo">
+                            <svg aria-hidden="true"><use href="#i-whatsapp"/></svg>Dúvida sobre esta tiragem? Pergunte no WhatsApp
+                        </a>
                     </div>
                 </article>
             </div>
@@ -641,6 +664,9 @@
                             <svg aria-hidden="true"><use href="#twinkle"/></svg>
                             O valor pode subir conforme a cor e a essência. O preço final é confirmado no WhatsApp.
                         </p>
+                        <a class="ask-link" href="https://wa.me/5524999894376?text=Ol%C3%A1%2C%20Guilherme!%20Vim%20pelo%20site%20da%20Noctun%20Tarot%20e%20gostaria%20de%20tirar%20uma%20d%C3%BAvida." target="_blank" rel="noopener" data-ask="o valor das velas">
+                            <svg aria-hidden="true"><use href="#i-whatsapp"/></svg>Quer saber o valor de uma cor ou essência? Pergunte no WhatsApp
+                        </a>
                     </header>
 
                     <div class="shop-rail" data-rail>
@@ -819,6 +845,10 @@
                             <li><span>Intuição</span></li>
                             <li><span>Análise simbólica</span></li>
                         </ul>
+                        <a class="btn btn-ghost about-cta" href="#leituras" data-ritual-open>
+                            <svg aria-hidden="true"><use href="#twinkle"/></svg>
+                            Fazer minha pergunta ao Guilherme
+                        </a>
                     </div>
                 </div>
             </div>
@@ -883,10 +913,13 @@
         <div class="container footer-inner">
             <svg class="footer-mark" aria-hidden="true"><use href="#mark"/></svg>
             <h2 class="footer-title">Vamos consultar as cartas?</h2>
-            <p class="footer-lead">Escolha sua leitura, monte o pedido e fale comigo pelo WhatsApp.</p>
+            <p class="footer-lead">Escreva sua pergunta, escolha a leitura e fale comigo pelo WhatsApp.</p>
             <div class="footer-actions">
-                <a class="btn btn-gold btn-shine" href="#leituras">Montar meu pedido</a>
-                <a class="btn btn-ghost btn-ghost--light" href="https://wa.me/5524999894376" target="_blank" rel="noopener">
+                <a class="btn btn-gold btn-shine" href="#leituras" data-ritual-open>
+                    <svg aria-hidden="true"><use href="#twinkle"/></svg>
+                    Fazer minha pergunta
+                </a>
+                <a class="btn btn-ghost btn-ghost--light" href="https://wa.me/5524999894376?text=Ol%C3%A1%2C%20Guilherme!%20Vim%20pelo%20site%20da%20Noctun%20Tarot%20e%20gostaria%20de%20tirar%20uma%20d%C3%BAvida." target="_blank" rel="noopener">
                     <svg aria-hidden="true"><use href="#i-whatsapp"/></svg>(24) 99989-4376
                 </a>
             </div>
@@ -922,7 +955,63 @@
         </header>
 
         <div class="drawer-body">
+            <!-- Pedido preparado: aparece depois de tocar em "Finalizar no WhatsApp" -->
+            <div class="sent" data-sent hidden>
+                <span class="seal seal--lg" aria-hidden="true"><svg><use href="#mark"/></svg></span>
+                <p class="kicker">Quase lá</p>
+                <h3 class="sent-title" tabindex="-1" data-sent-title>Seu pedido foi preparado no WhatsApp</h3>
+                <p class="sent-text">É só tocar em enviar por lá. Se o WhatsApp não abriu, use uma das opções abaixo.</p>
+                <a class="btn btn-forest btn-block" href="https://wa.me/5524999894376" target="_blank" rel="noopener" data-sent-open>
+                    <svg aria-hidden="true"><use href="#i-whatsapp"/></svg>Abrir o WhatsApp de novo<span class="sr-only"> (abre o WhatsApp)</span>
+                </a>
+                <button class="btn btn-ghost btn-block" type="button" data-sent-copy>
+                    <svg aria-hidden="true"><use href="#i-copy"/></svg><span>Copiar mensagem</span>
+                </button>
+                <p class="sent-copied" role="status" data-sent-copied></p>
+                <h4 class="sent-steps-title">Próximos passos</h4>
+                <ol class="sent-steps">
+                    <li>Envie a mensagem e complete seus dados.</li>
+                    <li>O Guilherme envia o PIX ou o link do cartão.</li>
+                    <li data-sent-last>Após o comprovante, sua leitura entra na fila e chega em até 3 dias corridos.</li>
+                </ol>
+                <div class="sent-links">
+                    <button class="text-btn" type="button" data-sent-back>Voltar ao pedido</button>
+                    <button class="text-btn text-btn--quiet" type="button" data-sent-clear>Já enviei: limpar pedido</button>
+                </div>
+            </div>
+
+            <!-- A pergunta da pessoa (vai pronta na mensagem do WhatsApp) -->
+            <section class="cart-question" aria-labelledby="cq-title" data-cart-question hidden>
+                <h3 class="sr-only" id="cq-title">Sua pergunta</h3>
+                <div class="cq-filled" data-cq-filled hidden>
+                    <span class="seal" aria-hidden="true"><svg><use href="#mark"/></svg></span>
+                    <div class="cq-body">
+                        <p class="cq-kicker" aria-hidden="true">Sua pergunta</p>
+                        <p class="cq-text" data-cq-text></p>
+                        <div class="cq-actions">
+                            <button class="text-btn" type="button" data-cq-edit aria-controls="cq-editor" aria-expanded="false">Editar</button>
+                            <button class="text-btn" type="button" data-cq-clear>Apagar</button>
+                        </div>
+                    </div>
+                </div>
+                <button class="cq-add" type="button" data-cq-add aria-controls="cq-editor" aria-expanded="false">
+                    <svg aria-hidden="true"><use href="#i-plus"/></svg>Escrever minha pergunta <small>(opcional)</small>
+                </button>
+                <div class="cq-editor" id="cq-editor" data-cq-editor hidden>
+                    <label class="cq-label" for="cq-input">Sua pergunta para o Guilherme</label>
+                    <textarea class="cq-input" id="cq-input" maxlength="400" rows="3" aria-describedby="cq-help" data-cq-input></textarea>
+                    <div class="cq-editor-foot">
+                        <p class="cq-help" id="cq-help">Fica só neste aparelho e vai pronta na mensagem do WhatsApp.</p>
+                        <button class="btn btn-ghost btn-sm" type="button" data-cq-done>Pronto</button>
+                    </div>
+                </div>
+            </section>
+
             <ul class="cart-list" data-cart-list></ul>
+            <button class="text-btn continue-link" type="button" data-cart-close data-cart-continue hidden>
+                <svg aria-hidden="true"><use href="#i-arrow"/></svg>Continuar escolhendo
+            </button>
+            <p class="sr-only" aria-live="polite" data-cart-live></p>
 
             <div class="cart-empty" data-cart-empty>
                 <svg class="cart-empty-art" aria-hidden="true"><use href="#card-outline"/></svg>
@@ -944,11 +1033,15 @@
                 <strong><small data-total-from hidden>a partir de</small> <span data-cart-total>R$ 0,00</span></strong>
             </div>
             <p class="cart-variable-note" data-variable-note hidden>O valor das velas pode subir conforme a cor e a essência. O preço final é confirmado no WhatsApp.</p>
-            <button class="btn btn-forest btn-block" type="button" data-checkout>
+            <a class="btn btn-forest btn-block" href="https://wa.me/5524999894376" target="_blank" rel="noopener" data-checkout>
                 <svg aria-hidden="true"><use href="#i-whatsapp"/></svg>
-                Finalizar no WhatsApp
-            </button>
-            <p class="drawer-note">Abriremos o WhatsApp com o pedido pronto. Lá você completa seus dados e combina o pagamento (PIX ou cartão).</p>
+                Finalizar no WhatsApp<span class="sr-only"> (abre o WhatsApp)</span>
+            </a>
+            <ul class="reassure">
+                <li><svg aria-hidden="true"><use href="#i-check"/></svg>Nada é cobrado aqui</li>
+                <li><svg aria-hidden="true"><use href="#i-check"/></svg>Você revisa a mensagem antes de enviar</li>
+                <li><svg aria-hidden="true"><use href="#i-check"/></svg>PIX ou cartão, combinado no WhatsApp</li>
+            </ul>
         </footer>
     </aside>
 
@@ -975,8 +1068,8 @@
             <p class="oracle-meaning" data-oracle-meaning></p>
             <p class="oracle-note">Este é o significado geral da carta, um convite à reflexão. Para olhar de perto a <em>sua</em> situação, faça uma pergunta ao Guilherme.</p>
             <div class="oracle-actions">
-                <button class="btn btn-gold btn-shine" type="button" data-add data-id="pergunta-objetiva" data-cta="Fazer uma pergunta">
-                    <svg aria-hidden="true"><use href="#i-plus"/></svg><span>Fazer uma pergunta</span>
+                <button class="btn btn-gold btn-shine" type="button" data-ritual-open>
+                    <svg aria-hidden="true"><use href="#twinkle"/></svg><span>Fazer minha pergunta</span>
                 </button>
                 <a class="btn btn-ghost" href="#descubra" data-oracle-close>Qual leitura é para mim?</a>
             </div>
@@ -987,6 +1080,16 @@
                 </button>
             </p>
         </div>
+    </div>
+
+    <!-- ============ RITUAL DA PERGUNTA ============ -->
+    <div class="ritual-backdrop" data-ritual-close></div>
+    <div class="ritual" id="ritual" role="dialog" aria-modal="true" aria-labelledby="ritual-title" inert>
+        <div class="starfield" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <button class="icon-btn ritual-close" type="button" data-ritual-close aria-label="Fechar ritual da pergunta">
+            <svg aria-hidden="true"><use href="#i-close"/></svg>
+        </button>
+        <div class="ritual-stage" data-ritual-stage></div>
     </div>
 
     <div class="toast-region" aria-live="polite" aria-atomic="true" data-toasts></div>
