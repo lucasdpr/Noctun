@@ -5818,7 +5818,7 @@ button.arch:focus-visible {
 }
 
 /* Celular: o painel da tiragem fica logo abaixo das cartas, sem cobri-las */
-@media (max-width: 600px) {
+@media (max-width: 920px) {
     .board-panel,
     body.has-fab .board-panel {
         position: static;
