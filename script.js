@@ -11,7 +11,12 @@
     const RUSH = { name: 'Furar fila (atendimento imediato)', price: 50 };
     const STORAGE_KEY = 'noctun:pedido:v1';
     const BIRTH_KEY = 'noctun:nascimento'; // data informada em "Seu arcano" (só neste aparelho)
+    // Pergunta escrita pela pessoa: só nesta aba (sessionStorage), some ao fechar o navegador
+    const QUESTION_KEY = 'noctun:pergunta';
+    const QUESTION_MAX = 400;
     const MAX_QTY = 20;
+
+    const waUrl = (text) => `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
 
     const brl = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
     const formatBRL = (value) => brl.format(value);
@@ -193,6 +198,37 @@
         render();
     }
 
+    // Pergunta da pessoa: { text, topic }. Sem armazenamento, fica só na memória.
+    let questionMemory = null;
+
+    function cleanQuestion(data) {
+        if (!data || typeof data.text !== 'string') return null;
+        const text = data.text.slice(0, QUESTION_MAX);
+        if (!text.trim()) return null;
+        return { text, topic: typeof data.topic === 'string' ? data.topic : '' };
+    }
+
+    function getQuestion() {
+        try {
+            const raw = sessionStorage.getItem(QUESTION_KEY);
+            return raw === null ? questionMemory : cleanQuestion(JSON.parse(raw));
+        } catch {
+            return questionMemory;
+        }
+    }
+
+    function setQuestion(data) {
+        questionMemory = cleanQuestion(data);
+        try {
+            if (questionMemory) sessionStorage.setItem(QUESTION_KEY, JSON.stringify(questionMemory));
+            else sessionStorage.removeItem(QUESTION_KEY);
+        } catch {
+            // sem sessionStorage: segue na memória
+        }
+    }
+
+    const clearQuestion = () => setQuestion(null);
+
     // =====================================================
     // 3. Interface do pedido
     // =====================================================
@@ -212,6 +248,9 @@
         totalLabel: document.querySelector('[data-total-label]'),
         variableNote: document.querySelector('[data-variable-note]'),
         checkout: document.querySelector('[data-checkout]'),
+        question: document.querySelector('[data-cart-question]'),
+        continueBtn: document.querySelector('[data-cart-continue]'),
+        live: document.querySelector('[data-cart-live]'),
     };
 
     const ITEM_TEMPLATE = `
@@ -306,8 +345,11 @@
         ui.foot.hidden = !hasItems;
         ui.rushWrap.hidden = !hasService();
         ui.rush.checked = rushActive();
+        ui.continueBtn.hidden = !hasItems;
 
         renderList(items);
+        renderQuestion();
+        updateCheckoutLinks();
     }
 
     function bumpBadge() {
@@ -404,19 +446,54 @@
 
     const isCartOpen = () => drawer.classList.contains('is-open');
 
-    function openCart() {
-        if (isCartOpen()) return;
-        lastFocus = document.activeElement;
-        setMenu(false);
-        toastRegion.replaceChildren(); // avisos ficariam por cima do cabeçalho da gaveta
+    // Diálogos que travam a página (pedido, carta do dia, ritual). A página só
+    // volta ao normal quando nenhum deles continua aberto.
+    const modalChecks = [isCartOpen];
+    const anyModalOpen = () => modalChecks.some((isOpen) => isOpen());
 
-        drawer.inert = false;
-        drawer.classList.add('is-open');
-        backdrop.classList.add('is-open');
-        // Torna o resto da página inerte: o foco fica preso dentro do pedido
+    function lockPage() {
         pageRegions.forEach((el) => { el.inert = true; });
         document.body.classList.add('no-scroll');
-        closeBtn.focus({ preventScroll: true });
+    }
+
+    function unlockPage() {
+        if (anyModalOpen()) return;
+        pageRegions.forEach((el) => { el.inert = false; });
+        document.body.classList.remove('no-scroll');
+    }
+
+    function announce(message) {
+        ui.live.textContent = '';
+        setTimeout(() => { ui.live.textContent = message; }, 60);
+    }
+
+    // highlight: chave do item que acabou de entrar (brilha por um instante)
+    function openCart({ returnFocus = null, highlight = null } = {}) {
+        if (anyModalOpen() && !isCartOpen()) return;
+        if (!isCartOpen()) {
+            lastFocus = returnFocus || document.activeElement;
+            setMenu(false);
+            toastRegion.replaceChildren(); // avisos ficariam por cima do cabeçalho da gaveta
+
+            drawer.inert = false;
+            drawer.classList.add('is-open');
+            backdrop.classList.add('is-open');
+            // Torna o resto da página inerte: o foco fica preso dentro do pedido
+            lockPage();
+            closeBtn.focus({ preventScroll: true });
+        }
+        if (highlight) {
+            const li = ui.list.querySelector(`[data-key="${CSS.escape(highlight)}"]`);
+            if (li) {
+                li.classList.remove('is-new');
+                void li.offsetWidth;
+                li.classList.add('is-new');
+                setTimeout(() => li.classList.remove('is-new'), 1400);
+                li.scrollIntoView({ block: 'nearest' });
+                const name = li.querySelector('.cart-item-name').textContent;
+                announce(`${name} está no seu pedido.`);
+            }
+        }
     }
 
     function closeCart({ restoreFocus = true } = {}) {
@@ -424,15 +501,158 @@
         drawer.classList.remove('is-open');
         backdrop.classList.remove('is-open');
         drawer.inert = true;
-        if (!isOracleOpen()) {
-            pageRegions.forEach((el) => { el.inert = false; });
-            document.body.classList.remove('no-scroll');
-        }
+        setSent(false);
+        closeQuestionEditor({ focus: false });
+        unlockPage();
 
         if (restoreFocus && lastFocus && document.contains(lastFocus)) {
             lastFocus.focus({ preventScroll: true });
         }
     }
+
+    // ---------- Pergunta dentro do pedido ----------
+    const cq = {
+        filled: ui.question.querySelector('[data-cq-filled]'),
+        text: ui.question.querySelector('[data-cq-text]'),
+        edit: ui.question.querySelector('[data-cq-edit]'),
+        clear: ui.question.querySelector('[data-cq-clear]'),
+        add: ui.question.querySelector('[data-cq-add]'),
+        editor: ui.question.querySelector('[data-cq-editor]'),
+        input: ui.question.querySelector('[data-cq-input]'),
+        done: ui.question.querySelector('[data-cq-done]'),
+    };
+    let questionSaveTimer = 0;
+
+    function renderQuestion() {
+        // Só faz sentido para leituras; velas e banhos não levam pergunta
+        ui.question.hidden = !hasService();
+        if (!cq.editor.hidden) return; // não mexe enquanto a pessoa escreve
+        const question = getQuestion();
+        cq.filled.hidden = !question;
+        cq.add.hidden = Boolean(question);
+        cq.text.textContent = question ? `“${question.text.trim()}”` : '';
+    }
+
+    function openQuestionEditor() {
+        const question = getQuestion();
+        cq.input.value = question ? question.text : '';
+        cq.editor.hidden = false;
+        cq.filled.hidden = true;
+        cq.add.hidden = true;
+        [cq.edit, cq.add].forEach((btn) => btn.setAttribute('aria-expanded', 'true'));
+        cq.input.focus();
+        cq.input.setSelectionRange(cq.input.value.length, cq.input.value.length);
+    }
+
+    function saveQuestionInput() {
+        clearTimeout(questionSaveTimer);
+        const previous = getQuestion();
+        setQuestion({ text: cq.input.value, topic: previous ? previous.topic : '' });
+        updateCheckoutLinks();
+    }
+
+    function closeQuestionEditor({ focus = true } = {}) {
+        if (cq.editor.hidden) return;
+        saveQuestionInput();
+        cq.editor.hidden = true;
+        [cq.edit, cq.add].forEach((btn) => btn.setAttribute('aria-expanded', 'false'));
+        renderQuestion();
+        if (focus) (getQuestion() ? cq.edit : cq.add).focus();
+    }
+
+    cq.add.addEventListener('click', openQuestionEditor);
+    cq.edit.addEventListener('click', openQuestionEditor);
+    cq.done.addEventListener('click', () => closeQuestionEditor());
+    cq.input.addEventListener('input', () => {
+        clearTimeout(questionSaveTimer);
+        questionSaveTimer = setTimeout(saveQuestionInput, 300);
+    });
+    cq.clear.addEventListener('click', () => {
+        clearQuestion();
+        renderQuestion();
+        updateCheckoutLinks();
+        cq.add.focus();
+        announce('Pergunta apagada.');
+    });
+
+    // ---------- Pedido preparado (depois de tocar em Finalizar) ----------
+    const sent = {
+        box: drawer.querySelector('[data-sent]'),
+        title: drawer.querySelector('[data-sent-title]'),
+        open: drawer.querySelector('[data-sent-open]'),
+        copy: drawer.querySelector('[data-sent-copy]'),
+        copied: drawer.querySelector('[data-sent-copied]'),
+        last: drawer.querySelector('[data-sent-last]'),
+    };
+
+    function setSent(on) {
+        if (on && !isCartOpen()) return; // a pessoa fechou o pedido antes: nada a mostrar
+        drawer.classList.toggle('is-sent', on);
+        sent.box.hidden = !on;
+        sent.copied.textContent = '';
+        if (!on) return;
+        sent.last.textContent = !hasService()
+            ? 'A entrega das velas e banhos é combinada por lá.'
+            : rushActive()
+                ? 'Com Furar fila, você é atendido na hora.'
+                : 'Após o comprovante, sua leitura entra na fila e chega em até 3 dias corridos.';
+        updateCheckoutLinks();
+        sent.title.focus({ preventScroll: true });
+        drawer.querySelector('.drawer-body').scrollTop = 0;
+        if (!reduceMotion) burst(sent.box.querySelector('.seal'), { count: 9, distance: 50, className: 'spark spark--center' });
+    }
+
+    function updateCheckoutLinks() {
+        if (!state.items.length) return;
+        const url = waUrl(buildMessage());
+        ui.checkout.href = url;
+        sent.open.href = url;
+    }
+
+    async function copyText(text) {
+        try {
+            await navigator.clipboard.writeText(text);
+            return true;
+        } catch {
+            // Navegadores sem a API de área de transferência
+            const area = document.createElement('textarea');
+            area.value = text;
+            area.setAttribute('readonly', '');
+            area.style.position = 'fixed';
+            area.style.opacity = '0';
+            drawer.append(area);
+            area.select();
+            let ok = false;
+            try {
+                ok = document.execCommand('copy');
+            } catch {
+                ok = false;
+            }
+            area.remove();
+            return ok;
+        }
+    }
+
+    sent.copy.addEventListener('click', async () => {
+        const ok = await copyText(buildMessage());
+        sent.copied.textContent = ok
+            ? 'Mensagem copiada. Cole na conversa com o Guilherme: (24) 99989-4376.'
+            : 'Não deu para copiar aqui. Use “Abrir o WhatsApp de novo”.';
+    });
+
+    drawer.querySelector('[data-sent-back]').addEventListener('click', () => {
+        setSent(false);
+        closeBtn.focus();
+    });
+
+    drawer.querySelector('[data-sent-clear]').addEventListener('click', () => {
+        state.items = [];
+        state.rush = false;
+        clearQuestion();
+        commit();
+        closeCart();
+        toast('Pedido limpo.');
+    });
 
     // =====================================================
     // 6. Finalizar no WhatsApp
@@ -454,6 +674,10 @@
         lines.push('', `*Total: ${variable ? 'a partir de ' : ''}${formatBRL(orderTotal())}*`);
         if (variable) lines.push('_O valor das velas pode variar conforme a cor e a essência._');
 
+        // A pergunta escrita no site já vai pronta (só para leituras)
+        const question = services.length ? getQuestion() : null;
+        if (question) lines.push('', '*Minha pergunta:*', `“${question.text.replace(/\s+/g, ' ').trim()}”`);
+
         // Pede só os dados que fazem sentido para o que foi pedido
         lines.push('', '*Meus dados:*', 'Nome completo: ');
         if (services.length) lines.push(`Data de nascimento: ${savedBirth()}`, 'Contexto da história: ');
@@ -461,13 +685,17 @@
         return lines.join('\n');
     }
 
-    function checkout() {
+    // "Finalizar" é um link de verdade para o WhatsApp (mais confiável nos navegadores
+    // do Instagram/TikTok do que window.open). O endereço é atualizado a cada mudança.
+    function checkout(event) {
         if (!state.items.length) {
+            event.preventDefault();
             toast('Adicione uma leitura ao pedido primeiro.');
             return;
         }
-        const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(buildMessage())}`;
-        window.open(url, '_blank', 'noopener');
+        if (!cq.editor.hidden) saveQuestionInput();
+        updateCheckoutLinks();
+        setTimeout(() => setSent(true), 0);
     }
 
     // =====================================================
@@ -501,11 +729,35 @@
                 opts = readOptions(addBtn.closest('[data-product]'), product);
                 if (!opts) return; // faltou escolher: o erro aparece no próprio card
             }
+            // Botões de impulso (tiragens, resultado do quiz): abrem o pedido na hora,
+            // sem duplicar o item se a pessoa tocar de novo
+            if (addBtn.dataset.then === 'pedido') {
+                const key = itemKey(id, opts);
+                if (!findItem(key)) {
+                    addItem(id, opts);
+                    flashAdded(addBtn);
+                    haptic();
+                }
+                setTimeout(() => openCart({ returnFocus: addBtn, highlight: key }), reduceMotion ? 0 : 450);
+                return;
+            }
             addItem(id, opts);
             flashAdded(addBtn);
             flyToCart(addBtn);
             haptic();
             toast(`Adicionado ao pedido: ${product.name}${opts ? ` (${Object.values(opts).join(', ')})` : ''}`);
+            return;
+        }
+
+        const ritualOpener = event.target.closest('[data-ritual-open]');
+        if (ritualOpener) {
+            event.preventDefault();
+            openRitual(ritualOpener);
+            return;
+        }
+
+        if (event.target.closest('[data-ritual-close]')) {
+            closeRitual();
             return;
         }
 
@@ -528,7 +780,7 @@
         }
 
         if (event.target.closest('[data-checkout]')) {
-            checkout();
+            checkout(event);
             return;
         }
 
@@ -567,7 +819,8 @@
 
     document.addEventListener('keydown', (event) => {
         if (event.key !== 'Escape') return;
-        if (isOracleOpen()) closeOracle();
+        if (isRitualOpen()) closeRitual();
+        else if (isOracleOpen()) closeOracle();
         else if (isCartOpen()) closeCart();
         else if (nav.classList.contains('is-open')) {
             setMenu(false);
@@ -608,14 +861,20 @@
     if (reduceMotion || !('IntersectionObserver' in window)) {
         revealEls.forEach((el) => el.classList.add('is-visible'));
     } else {
+        // O que já aparece na primeira tela (o topo inteiro, ou a seção de um link
+        // como #metodos) entra na hora: nada de botões invisíveis na dobra
+        revealEls.forEach((el) => {
+            const rect = el.getBoundingClientRect();
+            if (el.closest('.hero') || (rect.top < window.innerHeight && rect.bottom > 0)) el.classList.add('is-visible');
+        });
         const revealer = new IntersectionObserver((entries, observer) => {
             entries.forEach((entry) => {
                 if (!entry.isIntersecting) return;
                 entry.target.classList.add('is-visible');
                 observer.unobserve(entry.target);
             });
-        }, { rootMargin: '0px 0px -8% 0px', threshold: 0.12 });
-        revealEls.forEach((el) => revealer.observe(el));
+        }, { rootMargin: '0px 0px -8% 0px', threshold: 0 });
+        revealEls.forEach((el) => { if (!el.classList.contains('is-visible')) revealer.observe(el); });
     }
 
     // =====================================================
@@ -1303,6 +1562,7 @@
             add.type = 'button';
             add.dataset.add = '';
             add.dataset.id = id;
+            add.dataset.then = 'pedido';
             add.setAttribute('aria-label', `Adicionar ${product.name} ao pedido`);
             add.append(svgIcon('i-plus'), make('span', '', 'Adicionar ao pedido'));
             const see = make('button', 'btn btn-ghost', 'Ver no catálogo');
@@ -1388,6 +1648,7 @@
     let oracleOpenTimer = 0;
 
     const isOracleOpen = () => oracle.classList.contains('is-open');
+    modalChecks.push(isOracleOpen);
 
     function dailyArcanum() {
         const now = new Date();
@@ -1411,8 +1672,8 @@
     }
 
     function openOracle() {
-        // não abre por cima do pedido (a pessoa pode ter aberto o pedido durante o embaralhar)
-        if (isOracleOpen() || isCartOpen()) return;
+        // não abre por cima de outro diálogo (a pessoa pode ter aberto o pedido durante o embaralhar)
+        if (anyModalOpen()) return;
         const arcanum = dailyArcanum();
         oracle.querySelector('[data-oracle-num]').textContent = arcanum.num;
         oracle.querySelector('[data-oracle-glyph]').setAttribute('href', `#${arcanum.glyph}`);
@@ -1428,8 +1689,7 @@
         oracle.inert = false;
         oracle.classList.add('is-open');
         oracleBackdrop.classList.add('is-open');
-        pageRegions.forEach((el) => { el.inert = true; });
-        document.body.classList.add('no-scroll');
+        lockPage();
         oracle.querySelector('.oracle-close').focus({ preventScroll: true });
 
         oracleTimers.forEach(clearTimeout);
@@ -1446,10 +1706,7 @@
         oracle.classList.remove('is-open', 'is-revealed');
         oracleBackdrop.classList.remove('is-open');
         oracle.inert = true;
-        if (!isCartOpen()) {
-            pageRegions.forEach((el) => { el.inert = false; });
-            document.body.classList.remove('no-scroll');
-        }
+        unlockPage();
         if (restoreFocus && oracleReturn && document.contains(oracleReturn)) oracleReturn.focus({ preventScroll: true });
     }
 
@@ -1577,6 +1834,7 @@
             // No celular: um punhado de estrelas onde a pessoa toca
             document.addEventListener('click', (event) => {
                 if (!event.clientX && !event.clientY) return; // clique via teclado
+                if (event.target.closest('textarea, input, select, label')) return; // não atrapalha quem escreve
                 for (let i = 0; i < 6; i += 1) {
                     const angle = (Math.PI * 2 * i) / 6 + Math.random() * 0.5;
                     const dist = 22 + Math.random() * 18;
@@ -1599,15 +1857,42 @@
             }
             return;
         }
-        window.open(`https://wa.me/?text=${encodeURIComponent(`${text} ${url}`)}`, '_blank', 'noopener');
+        // Link criado e clicado no mesmo toque: funciona nos navegadores do Instagram/TikTok
+        const link = document.createElement('a');
+        link.href = `https://wa.me/?text=${encodeURIComponent(`${text} ${url}`)}`;
+        link.target = '_blank';
+        link.rel = 'noopener';
+        document.body.append(link);
+        link.click();
+        link.remove();
     }
 
     const oracleShare = document.querySelector('[data-share="oracle"]');
     if (oracleShare) {
         oracleShare.addEventListener('click', () => {
             const arcanum = dailyArcanum();
-            shareText(`Minha carta do dia na Noctun Tarot é ${arcanum.name} (${arcanum.keys.join(', ')}) ✨ Tire a sua:`);
+            shareText(`Minha carta do dia na Noctun Tarot é ${arcanum.name} (${arcanum.keys.join(', ')}) ✨ Tire a sua:`, '#tirar-carta');
         });
+    }
+
+    // Quem chega por um link compartilhado ganha um convite (sem abrir nada sozinho)
+    const landing = location.hash;
+    if (landing === '#tirar-carta' || landing === '#carta-do-dia') {
+        history.replaceState(null, '', location.pathname + location.search);
+        window.scrollTo(0, 0);
+        const art = document.querySelector('.hero-art');
+        const hint = art && art.querySelector('.arch-hint');
+        if (art && hint) {
+            art.classList.add('is-invited');
+            hint.textContent = 'Sua vez: toque no emblema e tire sua carta do dia';
+            art.querySelector('[data-shuffle]').addEventListener('click', () => art.classList.remove('is-invited'), { once: true });
+        }
+    } else if (landing === '#arcano') {
+        const dateInput = document.querySelector('[data-arcano-input]');
+        if (dateInput) {
+            dateInput.classList.add('is-called');
+            setTimeout(() => dateInput.classList.remove('is-called'), 2600);
+        }
     }
 
     // =====================================================
@@ -1750,11 +2035,8 @@
             const actions = make('div', 'arcano-actions');
             const ask = make('button', 'btn btn-gold btn-shine');
             ask.type = 'button';
-            ask.dataset.add = '';
-            ask.dataset.id = 'pergunta-objetiva';
-            ask.dataset.cta = 'Fazer uma pergunta';
-            ask.append(svgIcon('i-plus'), make('span'));
-            labelCta(ask);
+            ask.dataset.ritualOpen = '';
+            ask.append(svgIcon('twinkle'), make('span', '', 'Fazer minha pergunta'));
 
             const share = make('button', 'btn btn-ghost');
             share.type = 'button';
@@ -1839,6 +2121,359 @@
 
     document.querySelectorAll('[data-year]').forEach((el) => {
         el.textContent = String(new Date().getFullYear());
+    });
+
+    // =====================================================
+    // 20. Ritual da pergunta: acender a vela, escrever e selar a pergunta,
+    //     escolher o formato e seguir para o pedido.
+    //     Aqui o site não sorteia nem lê cartas: a pergunta vai para o Guilherme.
+    // =====================================================
+    const ritual = document.getElementById('ritual');
+    const ritualBackdrop = document.querySelector('.ritual-backdrop');
+    const ritualStage = ritual.querySelector('[data-ritual-stage]');
+    const isRitualOpen = () => ritual.classList.contains('is-open');
+    modalChecks.push(isRitualOpen);
+
+    const TOPICS = [
+        { id: 'amor', label: 'Amor' },
+        { id: 'desconfianca', label: 'Desconfiança' },
+        { id: 'trabalho', label: 'Trabalho e dinheiro' },
+        { id: 'caminhos', label: 'Caminhos e decisões' },
+        { id: 'outro', label: 'Outro tema' },
+    ];
+
+    const STARTERS = {
+        geral: ['O que preciso saber sobre este momento?', 'Que caminho devo seguir agora?', 'O que está travando a minha vida?'],
+        amor: ['O que essa pessoa sente por mim?', 'Essa relação tem futuro?', 'Vou conhecer alguém em breve?'],
+        desconfianca: ['Existe algo escondido nessa relação?', 'Essa pessoa está sendo sincera comigo?', 'Tem outra pessoa nessa história?'],
+        trabalho: ['Vale a pena mudar de emprego agora?', 'Como vai ficar minha vida financeira?', 'Esse projeto vai dar certo?'],
+        caminhos: ['Qual decisão me faz bem agora?', 'O que me espera nos próximos meses?', 'O que preciso deixar para trás?'],
+    };
+
+    const FORMATS = [
+        { id: 'pergunta-objetiva', text: 'Uma questão pontual, com resposta direta.' },
+        { id: 'pergunta-aprofundada', text: 'Análise detalhada de uma situação específica, com conselhos.' },
+        { id: 'templo-afrodite', topic: 'amor', text: 'Tiragem própria para o amor: pensamentos, sentimentos, intenções e futuro.' },
+        { id: 'templo-diabo', topic: 'desconfianca', text: 'Tiragem para relações intensas: apego, mentiras, desejos e o que está escondido.' },
+    ];
+
+    // Vela desenhada à mão (marcação fixa, sem dados da pessoa)
+    const CANDLE_SVG = `
+        <svg viewBox="0 0 80 124" aria-hidden="true">
+            <defs>
+                <radialGradient id="ritual-flame" cx="50%" cy="72%" r="62%">
+                    <stop offset="0" stop-color="#fffbea"/>
+                    <stop offset=".45" stop-color="#f4d98f"/>
+                    <stop offset="1" stop-color="#c5a559"/>
+                </radialGradient>
+                <radialGradient id="ritual-glow">
+                    <stop offset="0" stop-color="#f6dfa0" stop-opacity=".75"/>
+                    <stop offset="1" stop-color="#f6dfa0" stop-opacity="0"/>
+                </radialGradient>
+            </defs>
+            <circle class="candle-glow" cx="40" cy="30" r="30" fill="url(#ritual-glow)"/>
+            <g class="candle-flame">
+                <path d="M40 8c7 10 10 16 10 22a10 10 0 0 1-20 0c0-6 3-12 10-22z" fill="url(#ritual-flame)"/>
+                <path d="M40 22c3 4 4.5 7 4.5 10a4.5 4.5 0 0 1-9 0c0-3 1.5-6 4.5-10z" fill="#fffdf5"/>
+            </g>
+            <path d="M40 46v-8" stroke="#2c3a33" stroke-width="2.2" stroke-linecap="round"/>
+            <rect x="24" y="45" width="32" height="64" rx="5" fill="#f3f0e9"/>
+            <path d="M24 53c4 2 8 1 11 4 2 2 4 2 6 0 3-3 8-1 15-4" fill="none" stroke="#c5a559" stroke-width="1.6" stroke-linecap="round"/>
+            <ellipse cx="40" cy="45" rx="16" ry="3.6" fill="#e6dfcf"/>
+            <rect x="16" y="107" width="48" height="9" rx="4.5" fill="#c5a559"/>
+        </svg>`;
+
+    let draft = { text: '', topic: '' };
+    let ritualMode = 'selada'; // 'selada' (com pergunta) ou 'whatsapp' (contar por lá)
+    let ritualLit = false;
+    let ritualReturn = null;
+
+    function ritualSwap(node, focusEl, animate) {
+        const old = ritualStage.firstElementChild;
+        const put = () => {
+            ritualStage.replaceChildren(node);
+            ritualStage.scrollTop = 0;
+            focusEl.focus({ preventScroll: true });
+        };
+        if (animate && old && !reduceMotion) {
+            old.querySelectorAll('button, input, textarea').forEach((el) => { el.disabled = true; });
+            old.classList.add('is-leaving');
+            setTimeout(put, 180);
+        } else {
+            put();
+        }
+    }
+
+    function ritualHeading(text) {
+        const heading = make('h2', 'ritual-title', text);
+        heading.id = 'ritual-title';
+        heading.tabIndex = -1;
+        return heading;
+    }
+
+    function renderQuestionStep(animate) {
+        const node = make('div', 'ritual-step');
+        const moonName = (document.querySelector('[data-moon-name]') || {}).textContent;
+        const kicker = make('div', 'ritual-head');
+        kicker.append(make('p', 'kicker ritual-kicker', 'Ritual da pergunta'));
+        if (moonName) kicker.append(make('p', 'ritual-moon', moonName));
+
+        // A vela: acende num toque ou quando a pessoa começa a escrever (nunca é obrigatória)
+        const candleWrap = make('div', 'candle-wrap');
+        const candle = make('button', 'candle');
+        candle.type = 'button';
+        candle.innerHTML = CANDLE_SVG;
+        const candleHint = make('p', 'candle-hint');
+        candleHint.setAttribute('aria-live', 'polite');
+        candleWrap.append(candle, candleHint);
+
+        const setLit = (lit, interactive) => {
+            ritualLit = lit;
+            candleWrap.classList.toggle('is-lit', lit);
+            candle.setAttribute('aria-pressed', String(lit));
+            candle.setAttribute('aria-label', lit ? 'Vela acesa' : 'Acender a vela');
+            candleHint.textContent = lit ? 'A chama está acesa. Pense no que você quer saber.' : 'Toque na vela para acender';
+            if (lit && interactive) {
+                haptic(14);
+                if (!reduceMotion) burst(candleWrap, { count: 8, distance: 44, className: 'spark spark--center' });
+            }
+        };
+        setLit(ritualLit, false);
+        candle.addEventListener('click', () => { if (!ritualLit) setLit(true, true); });
+
+        const heading = ritualHeading('Qual é a sua pergunta?');
+
+        // Tema (opcional): muda as sugestões e as leituras oferecidas depois
+        const topics = make('fieldset', 'ritual-topics');
+        topics.append(make('legend', 'ritual-legend', 'Sobre o que é? (opcional)'));
+        const chips = make('div', 'ritual-chips');
+        TOPICS.forEach((topic) => {
+            const label = make('label', 'ritual-chip');
+            const input = make('input');
+            input.type = 'radio';
+            input.name = 'ritual-tema';
+            input.value = topic.id;
+            input.checked = draft.topic === topic.id;
+            label.append(input, make('span', '', topic.label));
+            chips.append(label);
+        });
+        topics.append(chips);
+
+        const field = make('div', 'ritual-field');
+        const label = make('label', 'ritual-label', 'Sua pergunta para o Guilherme');
+        label.htmlFor = 'ritual-q';
+        const area = make('textarea', 'ritual-input');
+        area.id = 'ritual-q';
+        area.rows = 4;
+        area.maxLength = QUESTION_MAX;
+        area.placeholder = 'Escreva do seu jeito. Ex.: O que posso esperar da minha vida amorosa nos próximos meses?';
+        area.setAttribute('aria-describedby', 'ritual-privacidade ritual-erro');
+        area.value = draft.text;
+        const counter = make('span', 'ritual-count');
+        counter.setAttribute('aria-hidden', 'true');
+        const remaining = make('span', 'sr-only');
+        remaining.setAttribute('aria-live', 'polite');
+        field.append(label, area, counter, remaining);
+
+        const starters = make('div', 'ritual-starters');
+        const starterList = make('div', 'ritual-starter-list');
+        starters.append(make('p', 'ritual-starters-title', 'Sem palavras? Comece por aqui:'), starterList);
+
+        const privacy = make('p', 'ritual-privacy', 'Sua pergunta fica só neste aparelho e vai apenas na mensagem que você envia pelo WhatsApp.');
+        privacy.id = 'ritual-privacidade';
+        const error = make('p', 'ritual-error');
+        error.id = 'ritual-erro';
+        error.setAttribute('role', 'alert');
+        error.hidden = true;
+
+        const sealBtn = make('button', 'btn btn-gold btn-shine btn-block');
+        sealBtn.type = 'button';
+        sealBtn.append(svgIcon('mark'), make('span', '', 'Selar minha pergunta'));
+        const skip = make('button', 'text-btn ritual-skip', 'Prefiro contar no WhatsApp');
+        skip.type = 'button';
+
+        const updateCount = () => {
+            const length = area.value.length;
+            counter.textContent = `${length}/${QUESTION_MAX}`;
+            remaining.textContent = length >= QUESTION_MAX - 40 ? `Faltam ${QUESTION_MAX - length} caracteres` : '';
+        };
+        const onInput = () => {
+            draft.text = area.value;
+            updateCount();
+            if (!ritualLit) setLit(true, true);
+            if (!error.hidden) {
+                error.hidden = true;
+                area.removeAttribute('aria-invalid');
+            }
+        };
+        const fillStarters = () => {
+            starterList.replaceChildren(...(STARTERS[draft.topic] || STARTERS.geral).map((text) => {
+                const btn = make('button', 'ritual-starter', text);
+                btn.type = 'button';
+                btn.addEventListener('click', () => {
+                    area.value = text;
+                    onInput();
+                    area.focus();
+                    area.setSelectionRange(text.length, text.length);
+                });
+                return btn;
+            }));
+        };
+
+        area.addEventListener('input', onInput);
+        topics.addEventListener('change', (event) => {
+            draft.topic = event.target.value;
+            fillStarters();
+        });
+        sealBtn.addEventListener('click', () => {
+            if (area.value.trim().length < 8) {
+                error.textContent = 'Escreva sua pergunta (algumas palavras bastam) ou toque em “Prefiro contar no WhatsApp”.';
+                error.hidden = false;
+                area.setAttribute('aria-invalid', 'true');
+                area.focus();
+                haptic([18, 60, 18]);
+                return;
+            }
+            draft.text = area.value;
+            ritualMode = 'selada';
+            renderFormatStep();
+        });
+        skip.addEventListener('click', () => {
+            ritualMode = 'whatsapp';
+            renderFormatStep();
+        });
+
+        fillStarters();
+        updateCount();
+        // O botão vem logo depois do campo (alcançável com o teclado aberto); as sugestões, depois
+        node.append(kicker, candleWrap, heading, topics, field, error, sealBtn, skip, starters, privacy);
+        ritualSwap(node, heading, animate);
+    }
+
+    function renderFormatStep() {
+        const node = make('div', 'ritual-step');
+        const sealed = ritualMode === 'selada';
+        const head = make('div', 'ritual-head');
+        head.append(make('p', 'kicker ritual-kicker', sealed ? 'Pergunta selada' : 'Tudo bem: você conta por lá'));
+        node.append(head);
+
+        if (sealed) {
+            const slip = make('div', 'ritual-slip');
+            slip.append(make('p', 'ritual-slip-text', `“${draft.text.trim()}”`));
+            const seal = make('span', 'seal seal--stamp');
+            seal.setAttribute('aria-hidden', 'true');
+            seal.append(svgIcon('mark'));
+            slip.append(seal);
+            node.append(slip);
+            if (!reduceMotion) {
+                setTimeout(() => {
+                    burst(seal, { count: 9, distance: 46, className: 'spark spark--center' });
+                    haptic(14);
+                }, 640);
+            }
+        }
+
+        const heading = ritualHeading('Como você quer a resposta?');
+        const formats = make('fieldset', 'ritual-formats');
+        formats.setAttribute('aria-labelledby', 'ritual-title');
+        const options = FORMATS.filter((format) => catalog.has(format.id) && (!format.topic || format.topic === draft.topic));
+        let chosen = options[0].id;
+
+        options.forEach((format) => {
+            const product = catalog.get(format.id);
+            const label = make('label', 'ritual-format');
+            const input = make('input');
+            input.type = 'radio';
+            input.name = 'ritual-formato';
+            input.value = format.id;
+            input.checked = format.id === chosen;
+            const body = make('span', 'ritual-format-body');
+            const top = make('span', 'ritual-format-top');
+            top.append(make('span', 'ritual-format-name', product.name), make('span', 'ritual-format-price', shortPrice(product.price)));
+            body.append(top, make('span', 'ritual-format-text', format.text));
+            label.append(input, body);
+            formats.append(label);
+        });
+
+        const go = make('button', 'btn btn-gold btn-shine btn-block');
+        go.type = 'button';
+        const goLabel = make('span');
+        go.append(goLabel, svgIcon('i-arrow'));
+        const updateGo = () => { goLabel.textContent = `Seguir para o pedido · ${shortPrice(catalog.get(chosen).price)}`; };
+        formats.addEventListener('change', (event) => {
+            chosen = event.target.value;
+            updateGo();
+        });
+        updateGo();
+        go.addEventListener('click', () => finishRitual(chosen));
+
+        const back = make('button', 'text-btn ritual-skip', sealed ? 'Reescrever minha pergunta' : 'Escrever minha pergunta aqui');
+        back.type = 'button';
+        back.addEventListener('click', () => renderQuestionStep(true));
+
+        const foot = make('p', 'ritual-foot', 'Nada é cobrado aqui. No WhatsApp, o Guilherme envia o PIX ou o link do cartão e, após o comprovante, sua leitura chega em até 3 dias.');
+
+        node.append(heading, formats, go, back, foot);
+        ritualSwap(node, heading, true);
+    }
+
+    function finishRitual(id) {
+        if (ritualMode === 'selada') setQuestion({ text: draft.text, topic: draft.topic });
+        else clearQuestion();
+        if (findItem(itemKey(id, null))) render();
+        else addItem(id);
+
+        const returnTo = ritualReturn;
+        closeRitual({ restoreFocus: false });
+        draft = { text: '', topic: '' };
+        ritualMode = 'selada';
+        ritualLit = false;
+        setTimeout(() => openCart({ returnFocus: returnTo, highlight: id }), reduceMotion ? 0 : 320);
+    }
+
+    function showRitual(returnTo) {
+        if (anyModalOpen()) return;
+        ritualReturn = returnTo;
+        setMenu(false);
+        toastRegion.replaceChildren();
+        ritual.inert = false;
+        ritual.classList.add('is-open');
+        ritualBackdrop.classList.add('is-open');
+        lockPage();
+        renderQuestionStep(false);
+    }
+
+    function openRitual(trigger) {
+        if (isRitualOpen() || isCartOpen()) return;
+        if (isOracleOpen()) {
+            // vem da carta do dia: fecha a carta e abre o ritual em seguida
+            const returnTo = oracleReturn;
+            closeOracle({ restoreFocus: false });
+            setTimeout(() => showRitual(returnTo), reduceMotion ? 0 : 300);
+            return;
+        }
+        showRitual(trigger);
+    }
+
+    function closeRitual({ restoreFocus = true } = {}) {
+        if (!isRitualOpen()) return;
+        ritual.classList.remove('is-open');
+        ritualBackdrop.classList.remove('is-open');
+        ritual.inert = true;
+        unlockPage();
+        if (restoreFocus && ritualReturn && document.contains(ritualReturn)) ritualReturn.focus({ preventScroll: true });
+    }
+
+    // Preço mínimo das leituras (vem do catálogo, nunca escrito duas vezes)
+    const servicePrices = [...catalog.values()].filter((product) => product.kind === 'servico').map((product) => product.price);
+    if (servicePrices.length) {
+        const minPrice = shortPrice(Math.min(...servicePrices));
+        document.querySelectorAll('[data-min-price]').forEach((el) => { el.textContent = minPrice; });
+    }
+
+    // Dúvidas nos pontos de decisão: a mensagem já diz sobre o que é
+    document.querySelectorAll('[data-ask]').forEach((link) => {
+        link.href = waUrl(`Olá, Guilherme! Vim pelo site da Noctun Tarot e tenho uma dúvida sobre ${link.dataset.ask}.`);
     });
 
     render();
