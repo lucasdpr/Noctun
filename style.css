@@ -4326,6 +4326,8 @@ button.arch:focus-visible {
         margin-inline: calc(var(--gutter) * -1);
         padding: 0.4rem var(--gutter) 1.2rem;
         overflow-x: auto;
+        overflow-y: hidden;
+        touch-action: pan-x pan-y;
         overscroll-behavior-x: contain;
         scroll-snap-type: x mandatory;
         scroll-padding-inline: var(--gutter);
@@ -5812,5 +5814,32 @@ button.arch:focus-visible {
     .js .board-card[data-reveal] .slot {
         opacity: 1;
         transform: none;
+    }
+}
+
+/* Celular: o painel da tiragem fica logo abaixo das cartas, sem cobri-las */
+@media (max-width: 600px) {
+    .board-panel,
+    body.has-fab .board-panel {
+        position: static;
+    }
+}
+
+/* Foto do Guilherme em "Quem sou" */
+.about-photo {
+    float: left;
+    width: 132px;
+    margin: 0 1.2rem 0.6rem 0;
+    border-radius: 999px 999px 18px 18px;
+    border: 1px solid var(--line-strong);
+    box-shadow: 0 0 0 5px var(--cream), 0 0 0 6px var(--line), var(--shadow-lift);
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    object-position: 50% 22%;
+}
+
+@media (max-width: 600px) {
+    .about-photo {
+        width: 108px;
     }
 }
