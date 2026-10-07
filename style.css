@@ -4659,6 +4659,10 @@ button.arch:focus-visible {
 
 /* Quem chega por um link de "carta do dia": convite em destaque */
 .hero-art.is-invited .arch-hint {
+    width: max-content;
+    max-width: calc(100vw - 32px);
+    white-space: normal;
+    text-align: center;
     padding: 0.35rem 0.85rem;
     border-radius: 999px;
     background: var(--gold);
@@ -4678,6 +4682,7 @@ button.arch:focus-visible {
 
 /* ---------- Selo de cera (pedido, ritual) ---------- */
 .seal {
+    position: relative;
     display: inline-grid;
     place-items: center;
     flex-shrink: 0;
@@ -4766,6 +4771,8 @@ button.arch:focus-visible {
     right: 10px;
     z-index: 3;
     color: var(--cream);
+    background: rgba(27, 37, 33, 0.88);
+    border: 1px solid rgba(197, 165, 89, 0.45);
 }
 
 .ritual :focus-visible {
@@ -4775,6 +4782,7 @@ button.arch:focus-visible {
 .ritual-stage {
     position: relative;
     z-index: 1;
+    overflow-x: hidden;
     overflow-y: auto;
     overscroll-behavior: contain;
     padding: clamp(1.8rem, 4vw, 2.4rem) clamp(1.2rem, 4vw, 2.4rem) calc(1.6rem + env(safe-area-inset-bottom));
@@ -4821,6 +4829,7 @@ button.arch:focus-visible {
 
 /* A vela */
 .candle-wrap {
+    position: relative;
     display: grid;
     justify-items: center;
     gap: 0.25rem;
@@ -4992,7 +5001,7 @@ button.arch:focus-visible {
 }
 
 .ritual-input::placeholder {
-    color: rgba(62, 62, 62, 0.5);
+    color: #6c6961;
     font-size: 1.12rem;
 }
 
@@ -5010,7 +5019,7 @@ button.arch:focus-visible {
     position: absolute;
     right: 0.95rem;
     bottom: 0.55rem;
-    color: rgba(62, 62, 62, 0.6);
+    color: rgba(62, 62, 62, 0.85);
     font-size: 0.72rem;
     font-variant-numeric: tabular-nums;
     pointer-events: none;
@@ -5680,6 +5689,41 @@ button.arch:focus-visible {
 
     .hero-actions {
         margin-top: 0.8rem;
+    }
+}
+
+@media (max-width: 600px) and (max-height: 600px) {
+    .hero {
+        padding-top: calc(var(--header-h) + 0.6rem);
+    }
+
+    .hero-art {
+        max-width: 92px;
+        margin-bottom: 1.3rem;
+    }
+
+    .arch-hint {
+        bottom: -1.45rem;
+        font-size: 0.68rem;
+    }
+
+    .hero h1 {
+        font-size: 2rem;
+    }
+
+    .hero .lead {
+        display: none;
+    }
+
+    .reassure li:nth-child(3) {
+        display: none;
+    }
+}
+
+@media (max-height: 700px) {
+    .reassure {
+        gap: 0.15rem 0.7rem;
+        font-size: 0.7rem;
     }
 }
 

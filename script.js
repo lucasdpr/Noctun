@@ -489,7 +489,9 @@
                 void li.offsetWidth;
                 li.classList.add('is-new');
                 setTimeout(() => li.classList.remove('is-new'), 1400);
-                li.scrollIntoView({ block: 'nearest' });
+                // com o bloco da pergunta (fica no topo), mostra o começo do pedido
+                if (!ui.question.hidden) drawer.querySelector('.drawer-body').scrollTop = 0;
+                else li.scrollIntoView({ block: 'nearest' });
                 const name = li.querySelector('.cart-item-name').textContent;
                 announce(`${name} está no seu pedido.`);
             }
@@ -505,8 +507,9 @@
         closeQuestionEditor({ focus: false });
         unlockPage();
 
-        if (restoreFocus && lastFocus && document.contains(lastFocus)) {
-            lastFocus.focus({ preventScroll: true });
+        if (restoreFocus) {
+            const canFocus = lastFocus && document.contains(lastFocus) && lastFocus.getClientRects().length > 0;
+            (canFocus ? lastFocus : ui.cartBtn).focus({ preventScroll: true });
         }
     }
 
@@ -620,6 +623,7 @@
             area.setAttribute('readonly', '');
             area.style.position = 'fixed';
             area.style.opacity = '0';
+            const previous = document.activeElement;
             drawer.append(area);
             area.select();
             let ok = false;
@@ -629,6 +633,7 @@
                 ok = false;
             }
             area.remove();
+            if (previous && document.contains(previous)) previous.focus({ preventScroll: true });
             return ok;
         }
     }
@@ -646,6 +651,8 @@
     });
 
     drawer.querySelector('[data-sent-clear]').addEventListener('click', () => {
+        cq.input.value = '';
+        closeQuestionEditor({ focus: false });
         state.items = [];
         state.rush = false;
         clearQuestion();
@@ -693,7 +700,7 @@
             toast('Adicione uma leitura ao pedido primeiro.');
             return;
         }
-        if (!cq.editor.hidden) saveQuestionInput();
+        closeQuestionEditor({ focus: false }); // salva o que estiver sendo escrito
         updateCheckoutLinks();
         setTimeout(() => setSent(true), 0);
     }
