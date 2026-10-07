@@ -5818,7 +5818,7 @@ button.arch:focus-visible {
 }
 
 /* Celular: o painel da tiragem fica logo abaixo das cartas, sem cobri-las */
-@media (max-width: 920px) {
+@media all {
     .board-panel,
     body.has-fab .board-panel {
         position: static;
@@ -5829,17 +5829,19 @@ button.arch:focus-visible {
 .about-photo {
     float: left;
     width: 132px;
+    height: 165px;
     margin: 0 1.2rem 0.6rem 0;
     border-radius: 999px 999px 18px 18px;
     border: 1px solid var(--line-strong);
     box-shadow: 0 0 0 5px var(--cream), 0 0 0 6px var(--line), var(--shadow-lift);
-    aspect-ratio: 4 / 5;
+    height: 165px;
     object-fit: cover;
-    object-position: 50% 22%;
+    object-position: 50% 28%;
 }
 
 @media (max-width: 600px) {
     .about-photo {
         width: 108px;
+        height: 135px;
     }
 }
