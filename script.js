@@ -42,6 +42,15 @@
     //    data-options        → opções obrigatórias (ex.: "essencia cor")
     // =====================================================
 
+    // Ofertas de temporada: [data-until="aaaa-mm-dd"] é o último dia no ar. No dia
+    // seguinte (relógio do aparelho) o bloco sai da página antes de o catálogo ser
+    // lido, então o produto também some do pedido salvo e do quiz.
+    document.querySelectorAll('[data-until]').forEach((el) => {
+        const [year, month, day] = el.dataset.until.split('-').map(Number);
+        const end = new Date(year, month - 1, day + 1);
+        if (!Number.isNaN(end.getTime()) && new Date() >= end) el.remove();
+    });
+
     // Cada produto com opções recebe uma cópia do <template> (lista única de essências e cores)
     document.querySelectorAll('[data-opts-slot]').forEach((slot, index) => {
         const tpl = document.getElementById(slot.dataset.optsSlot);
@@ -1404,8 +1413,13 @@
         'leitura-2h': { glyph: 'g-world', why: 'A consulta mais completa, para vários temas com calma.' },
         'templo-afrodite': { glyph: 'g-enamorados', why: 'Leitura para questões amorosas, autoestima e conexões afetivas: olha pensamentos, sentimentos, intenções e o futuro da relação.' },
         'templo-diabo': { glyph: 'g-diabo', why: 'Tiragem profunda para relações intensas e dinâmicas ocultas: investiga apego, mentiras, desejos e padrões que podem estar prendendo você.' },
-        'veu-do-tempo': { glyph: 'g-roda', why: 'Mandala anual de 2027: uma carta para cada mês, a energia e os desafios do seu ano e seis cartas para cada área da sua vida. Disponível só até janeiro de 2027.' },
+        'veu-do-tempo': { glyph: 'g-roda', why: 'Mandala anual de 2027: uma carta para cada mês, a energia e os desafios do seu ano e seis cartas para cada área da sua vida. Disponível só até 31 de janeiro de 2027.' },
     };
+
+    // Respostas que levam a um produto fora do catálogo (oferta encerrada) não aparecem
+    Object.values(QUIZ).forEach((step) => {
+        step.options = step.options.filter((option) => !option.result || catalog.has(option.result));
+    });
 
     const SVG_NS = 'http://www.w3.org/2000/svg';
     function svgIcon(id) {
