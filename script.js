@@ -1404,7 +1404,7 @@
         'leitura-2h': { glyph: 'g-world', why: 'A consulta mais completa, para vários temas com calma.' },
         'templo-afrodite': { glyph: 'g-enamorados', why: 'Leitura para questões amorosas, autoestima e conexões afetivas: olha pensamentos, sentimentos, intenções e o futuro da relação.' },
         'templo-diabo': { glyph: 'g-diabo', why: 'Tiragem profunda para relações intensas e dinâmicas ocultas: investiga apego, mentiras, desejos e padrões que podem estar prendendo você.' },
-        'veu-do-tempo': { glyph: 'g-roda', why: 'Mandala anual de 2027: uma carta para cada mês, a energia e os desafios do seu ano e seis cartas para cada área da sua vida.' },
+        'veu-do-tempo': { glyph: 'g-roda', why: 'Mandala anual de 2027: uma carta para cada mês, a energia e os desafios do seu ano e seis cartas para cada área da sua vida. Disponível só até janeiro de 2027.' },
     };
 
     const SVG_NS = 'http://www.w3.org/2000/svg';
