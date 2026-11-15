@@ -1368,6 +1368,7 @@
                 { label: 'Desconfiança na relação', hint: 'traição, mentiras, algo escondido', glyph: 'g-moon', result: 'templo-diabo' },
                 { label: 'Uma dúvida pontual', hint: 'qualquer tema, uma pergunta', glyph: 'g-star', next: 'pontual' },
                 { label: 'Vários assuntos', hint: 'olhar a vida com calma', glyph: 'g-world', next: 'consulta' },
+                { label: 'O meu ano de 2027', hint: 'mês a mês, energia e desafios', glyph: 'g-roda', result: 'veu-do-tempo' },
             ],
         },
         amor: {
@@ -1402,6 +1403,7 @@
         'leitura-2h': { glyph: 'g-world', why: 'A consulta mais completa, para vários temas com calma.' },
         'templo-afrodite': { glyph: 'g-enamorados', why: 'Leitura para questões amorosas, autoestima e conexões afetivas: olha pensamentos, sentimentos, intenções e o futuro da relação.' },
         'templo-diabo': { glyph: 'g-diabo', why: 'Tiragem profunda para relações intensas e dinâmicas ocultas: investiga apego, mentiras, desejos e padrões que podem estar prendendo você.' },
+        'veu-do-tempo': { glyph: 'g-roda', why: 'Mandala anual de 2027: uma carta para cada mês, a energia e os desafios do seu ano e as áreas da sua vida.' },
     };
 
     const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -1927,11 +1929,15 @@
         return SIGNS.slice(1).filter((sign) => value >= sign.from).pop();
     }
 
-    // Arcano de nascimento: soma dia + mês + ano e reduz os dígitos até chegar a 22 ou menos (22 = O Louco)
+    // Arcano de nascimento (método do Guilherme): soma todos os algarismos da data,
+    // um a um (28/12/2004 → 2+8+1+2+2+0+0+4 = 19, O Sol). Passou de 21, soma os
+    // algarismos do resultado (24 → 2+4 = 6).
+    const digitSum = (value) => String(value).split('').reduce((sum, digit) => sum + Number(digit), 0);
+
     function birthArcanum(day, month, year) {
-        let n = day + month + year;
-        while (n > 22) n = String(n).split('').reduce((sum, digit) => sum + Number(digit), 0);
-        return n === 22 ? 0 : n;
+        let n = digitSum(day) + digitSum(month) + digitSum(year);
+        while (n > 21) n = digitSum(n);
+        return n;
     }
 
     function parseBirth(value) {
