@@ -974,9 +974,10 @@
     // =====================================================
 
     // Os 22 Arcanos Maiores com o significado geral (tradicional) de cada carta.
+    // Na numeração do Guilherme, O Louco é o arcano 22 (fica na posição 0 desta lista).
     // A interpretação para a pergunta da pessoa fica para a leitura paga.
     const ARCANA = [
-        { num: '0', name: 'O Louco', glyph: 'g-louco', keys: ['Recomeço', 'Liberdade', 'Fé'], meaning: 'Começos, liberdade e confiança no novo. Pede coragem para dar o primeiro passo, com leveza.' },
+        { num: 'XXII', name: 'O Louco', glyph: 'g-louco', keys: ['Recomeço', 'Liberdade', 'Fé'], meaning: 'Começos, liberdade e confiança no novo. Pede coragem para dar o primeiro passo, com leveza.' },
         { num: 'I', name: 'O Mago', glyph: 'g-mago', keys: ['Iniciativa', 'Habilidade', 'Poder pessoal'], meaning: 'Você tem os recursos para fazer acontecer. É hora de agir e colocar a intenção em prática.' },
         { num: 'II', name: 'A Sacerdotisa', glyph: 'g-sacerdotisa', keys: ['Intuição', 'Mistério', 'Silêncio'], meaning: 'Há algo que ainda não foi dito. Escute a voz interior antes de decidir.' },
         { num: 'III', name: 'A Imperatriz', glyph: 'g-imperatriz', keys: ['Afeto', 'Criatividade', 'Abundância'], meaning: 'Energia de cuidado, beleza e fertilidade. Momento de nutrir o que você quer ver florescer.' },
@@ -1403,7 +1404,7 @@
         'leitura-2h': { glyph: 'g-world', why: 'A consulta mais completa, para vários temas com calma.' },
         'templo-afrodite': { glyph: 'g-enamorados', why: 'Leitura para questões amorosas, autoestima e conexões afetivas: olha pensamentos, sentimentos, intenções e o futuro da relação.' },
         'templo-diabo': { glyph: 'g-diabo', why: 'Tiragem profunda para relações intensas e dinâmicas ocultas: investiga apego, mentiras, desejos e padrões que podem estar prendendo você.' },
-        'veu-do-tempo': { glyph: 'g-roda', why: 'Mandala anual de 2027: uma carta para cada mês, a energia e os desafios do seu ano e as áreas da sua vida.' },
+        'veu-do-tempo': { glyph: 'g-roda', why: 'Mandala anual de 2027: uma carta para cada mês, a energia e os desafios do seu ano e seis cartas para cada área da sua vida.' },
     };
 
     const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -1930,14 +1931,14 @@
     }
 
     // Arcano de nascimento (método do Guilherme): soma todos os algarismos da data,
-    // um a um (28/12/2004 → 2+8+1+2+2+0+0+4 = 19, O Sol). Passou de 21, soma os
-    // algarismos do resultado (24 → 2+4 = 6).
+    // um a um (28/12/2004 → 2+8+1+2+2+0+0+4 = 19, O Sol). Passou de 22, soma os
+    // algarismos do resultado (24 → 2+4 = 6). O 22 é O Louco.
     const digitSum = (value) => String(value).split('').reduce((sum, digit) => sum + Number(digit), 0);
 
     function birthArcanum(day, month, year) {
         let n = digitSum(day) + digitSum(month) + digitSum(year);
-        while (n > 21) n = digitSum(n);
-        return n;
+        while (n > 22) n = digitSum(n);
+        return n === 22 ? 0 : n;
     }
 
     function parseBirth(value) {
@@ -2424,7 +2425,7 @@
         back.type = 'button';
         back.addEventListener('click', () => renderQuestionStep(true));
 
-        const foot = make('p', 'ritual-foot', 'Nada é cobrado aqui. No WhatsApp, o Guilherme envia o PIX ou o link do cartão e, após o comprovante, sua leitura chega em até 3 dias.');
+        const foot = make('p', 'ritual-foot', 'Nada é cobrado aqui. No WhatsApp, o Guilherme envia o PIX ou o link do cartão (dá para parcelar) e, após o comprovante, sua leitura chega em até 3 dias.');
 
         node.append(heading, formats, go, back, foot);
         ritualSwap(node, heading, true);

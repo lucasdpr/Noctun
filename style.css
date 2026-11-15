@@ -5846,7 +5846,7 @@ button.arch:focus-visible {
     }
 }
 
-/* ---------- Véu do Tempo: mandala anual (12 meses + 6 áreas + energia e desafios) ---------- */
+/* ---------- Véu do Tempo: mandala anual (12 meses + 4 áreas com 6 cartas + energia e desafios) ---------- */
 .veu {
     background:
         radial-gradient(46% 38% at 26% 58%, rgba(197, 165, 89, 0.2), transparent 72%),
@@ -5902,6 +5902,10 @@ button.arch:focus-visible {
     fill: #2a3832;
     stroke: var(--gold-soft);
     stroke-width: 1.6;
+}
+
+.veu-card--mini {
+    stroke-width: 1;
 }
 
 .veu-card-line {
