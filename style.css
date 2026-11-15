@@ -6017,6 +6017,37 @@ button.arch:focus-visible {
     font-weight: 500;
 }
 
+/* Aviso de edição limitada, logo acima do preço */
+.veu-limit {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.7rem;
+    margin-top: 1.6rem;
+    padding: 0.85rem 1rem;
+    border: 1px dashed var(--line-strong);
+    border-radius: var(--radius-sm);
+    background: rgba(220, 198, 144, 0.1);
+    font-size: 0.95rem;
+    line-height: 1.45;
+}
+
+.veu-limit svg {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    margin-top: 0.2rem;
+    color: var(--gold-soft);
+}
+
+.veu-limit strong {
+    color: var(--cream);
+    font-weight: 500;
+}
+
+.veu-limit + .buy-row {
+    margin-top: 1.2rem;
+}
+
 .veu .ask-link {
     color: var(--gold-soft);
     text-decoration-color: rgba(220, 198, 144, 0.5);
